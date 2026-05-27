@@ -72,3 +72,10 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## 5. Exigência de Testabilidade Mínima
+
+**Provas tangíveis superam "parece que funciona".**
+
+Para qualquer run de desenvolvimento de software, você DEVE criar ao menos um arquivo de teste de fumaça (smoke test) ou teste de integração simples utilizando as ferramentas nativas ou sugeridas do ecossistema do projeto (ex: Vitest para React Vite, Jest para Vanilla, XUnit para .NET).
+Nunca confie apenas em análises estáticas ou builds visuais quando uma funcionalidade crítica puder ser validada com um script de teste simples.

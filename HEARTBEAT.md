@@ -4,7 +4,7 @@ Este arquivo define como a IDE deve ciclar pelas fases, atualizar o estado e ger
 
 ## 1. Loop de Execução (Transições)
 O ciclo de vida do AgentOrchestrix consiste em 7 fases ordenadas:
-`0_interview` -> `1_planner` -> `2_architect` -> `3_builder` -> `4_validator` -> `5_reviewer` -> `6_critic` -> `completed`.
+`0_interview` -> `1_planner` -> `2_architect` -> `3_builder` -> `4_validator` -> `5_reviewer` -> `6_critic` -> `completed` (ou `waiting_for_user`).
 
 A IDE deve ler e escrever o arquivo `runs/run-XXX/state.json` para persistir o progresso. A cada mudança de estado:
 1. Conclua os entregáveis exigidos pelo contrato da fase atual.
@@ -12,6 +12,11 @@ A IDE deve ler e escrever o arquivo `runs/run-XXX/state.json` para persistir o p
 3. Modifique o campo `"current_phase"` para a próxima fase.
 4. Adicione a fase anterior na lista `"completed_phases"`.
 5. Atualize o campo `"updated_at"` com o timestamp ISO 8601 correspondente.
+
+### 1.1 Fluxo de Retorno de Crítica (Fase 6)
+Se a fase atual for a `6_critic` e o Critic identificar um risco com severidade **Alta** ou preocupações de manutenção complexas (como limites estritos de arquivos, acoplamento, armazenamento), a run DEVE assumir o status de `waiting_for_user`. O usuário terá a opção de:
+1. Concluir a run (assumir estado `completed`).
+2. Retornar a run para a Fase `2_architect` ou `3_builder` com uma "Tarefa de Refatoração baseada no Critic", permitindo um ciclo de polimento estrutural antes da entrega final.
 
 ---
 
