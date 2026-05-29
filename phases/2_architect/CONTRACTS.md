@@ -10,6 +10,8 @@
   # File Structure (Estrutura de Pastas e Arquivos)
   # Technologies (Tecnologias Utilizadas)
   # Interfaces (Componentes / APIs / Telas)
+  # Interaction Map (Mapa de Interações e Acessibilidade)
   # Data Models (Estruturas de Dados / Estados)
+  # Storage Strategy (Limites e Estratégia de Persistência)
   # Implementation Plan (Passo a passo da construção)
   ```

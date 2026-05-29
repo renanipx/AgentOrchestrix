@@ -10,6 +10,7 @@
   # Goal (Objetivo Geral)
   # Requirements (Requisitos Funcionais)
   # Constraints (Restrições Técnicas)
+  # Edge Cases (Casos Limite e Fluxos Destrutivos)
   # Deliverables (Entregáveis esperados)
   # Acceptance Criteria (Critérios de Aceitação)
   ```

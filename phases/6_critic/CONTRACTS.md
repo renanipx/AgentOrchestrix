@@ -11,4 +11,5 @@
   # Hidden Risks (Riscos ocultos mapeados)
   # Maintenance Concerns (Preocupações sobre manutenção futura)
   # Suggested Mitigations (Mitigações sugeridas)
+  # Actionable Backlog (Lista priorizada de itens acionáveis para próxima run)
   ```

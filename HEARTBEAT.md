@@ -54,7 +54,11 @@ O arquivo JSON deve seguir este formato:
     "scope": null,
     "acceptance_criteria": null,
     "integrations_data": null,
-    "constraints": null
+    "constraints": null,
+    "destructive_operations_strategy": null,
+    "storage_strategy": null,
+    "accessibility_level": null,
+    "max_lines_per_file": null
   },
   "artifacts": {
     "goal": "input/goal.md",
@@ -69,3 +73,6 @@ O arquivo JSON deve seguir este formato:
   "updated_at": "YYYY-MM-DDTHH:mm:ssZ"
 }
 ```
+
+### 4.1 Retrocompatibilidade (Backward Compatibility)
+Para garantir compatibilidade com runs legadas, se o `state.json` lido pelo agente não possuir alguns dos novos campos em `interview_decisions` (como `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`), o agente deve tratá-los como opcionais ou assumir valor default `null` para evitar falha catastrófica no parse ou na transição de fases.

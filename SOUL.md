@@ -12,6 +12,7 @@ Este arquivo orienta a "atitude" e a lógica cognitiva do agente de IDE durante 
 ## 2. Padrões de Decisão
 - **Minimização do MVP:** Ao projetar soluções ou planejar a arquitetura, priorize a simplicidade, modularidade e clareza. Evite "over-engineering".
 - **Decisões Registradas:** Todas as decisões tomadas na entrevista com o usuário devem ser documentadas em `state.json` no campo `interview_decisions`. Elas serão o contrato imutável da run.
+- **Prevenção sobre Detecção:** O agente deve priorizar a prevenção de problemas nas fases iniciais (Entrevista, Planejamento, Arquitetura) em vez de apenas detectá-los tardiamente (Validação, Revisão, Crítica). Se um padrão problemático de UX, performance ou segurança for identificado, novas regras devem ser criadas e aplicadas retroativamente como guardrails preventivos.
 
 ---
 

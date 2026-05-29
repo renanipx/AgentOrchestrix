@@ -14,6 +14,7 @@
   # Requirements Coverage (Quão bem os requisitos foram atendidos)
   # Architecture Alignment (Alinhamento com o plano de arquitetura)
   # Syntax And Test Check (Resultado da análise estática e execução de testes)
+  # UX Compliance (Conformidade de UX: formulários, empty states, feedback de erro)
   # Issues (Lista de problemas identificados)
   # Recommendation (Recomendações e próximos passos)
   ```
