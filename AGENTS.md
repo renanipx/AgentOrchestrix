@@ -29,4 +29,8 @@ Para qualquer solicitação neste workspace, execute os seguintes passos **antes
    - **Contratos:** [CONTRACTS.md](file:///d:/projetos/AgentOrchestrix/phases/) -> `phases/<current_phase>/CONTRACTS.md`
 4. Restrinja seus comportamentos apenas ao que for permitido no arquivo `RULES.md` e `CONTRACTS.md` da fase atual. Não execute tarefas de outras fases.
 
+5. Antes da primeira ação, leia também os arquivos complementares:
+   - **Princípios:** [SOUL.md](SOUL.md) — barreiras cognitivas, padrões de decisão e guardrails comportamentais.
+   - **Ferramentas:** [TOOLS.md](TOOLS.md) — regras de uso de ferramentas, restrições de ambiente e validações automáticas.
+
 *Consulte [HEARTBEAT.md](HEARTBEAT.md) para entender o ciclo de atualização e o formato do `state.json`.*

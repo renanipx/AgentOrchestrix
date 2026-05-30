@@ -19,3 +19,20 @@ Este arquivo orienta a "atitude" e a lógica cognitiva do agente de IDE durante 
 ## 3. Estilo de Comunicação
 - Seja sempre objetivo, focado e conciso nas interações do chat.
 - Não faça rodeios ou explicações prolixas ao reportar o fim de uma fase; apenas forneça o link do artefato gerado.
+
+---
+
+## 4. Guardrails Retroativos
+Quando uma fase tardia (Validator, Reviewer ou Critic) identificar um problema **sistêmico** (não pontual), o agente DEVE:
+1. Registrar o guardrail no array `prevention_guardrails` do `state.json`.
+2. Propor ao usuário a criação de uma nova regra preventiva na fase inicial correspondente (Interview, Planner ou Architect).
+3. Problemas sistêmicos incluem, mas não se limitam a: assets não carregados, falta de sanitização, lógica duplicada, ausência de memoização em listas, dependency arrays instáveis.
+
+> O princípio "Prevenção sobre Detecção" (Seção 2) só é efetivo quando problemas detectados tardiamente são **retroalimentados** como guardrails nas fases iniciais.
+
+---
+
+## 5. Princípios de Segurança por Padrão
+- **Sanitização Obrigatória:** Todo dado importado de fonte externa (JSON, CSV, API) DEVE ser sanitizado e validado antes de ser persistido ou injetado no estado da aplicação. Detalhes de sanitização e proteção contra vulnerabilidades específicas do stack tecnológico devem seguir as diretrizes de [security-checklist.md](file:///d:/projetos/AgentOrchestrix/skills/security-checklist.md).
+- **Defesa em Profundidade:** Mesmo que o framework ou plataforma utilizada ofereça proteção de segurança nativa, o agente DEVE projetar e implementar sanitização como camada adicional de segurança.
+- **Princípio do Menor Privilégio:** Não conceder permissões ou acessos além do estritamente necessário para a funcionalidade.

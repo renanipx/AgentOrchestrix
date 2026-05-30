@@ -554,6 +554,28 @@ findNearbyButton.addEventListener('click', async () => {
 
 ---
 
+## Web Standards & Architecture Compliance
+
+### SEO & Metadata Basics
+Every web application index or entry page MUST declare:
+- The `<html lang="XX">` attribute corresponding to the primary language of the application.
+- A descriptive `<title>` tag that identifies the specific application. Generic texts (like "Vite App", "React App", "generated") are prohibited.
+- A `<meta name="description" content="...">` containing a relevant description of the app's functionality.
+
+### Assets Matching
+Every font family defined in style sheets (via `font-family`) or third-party asset (CSS, JS) referenced in components must have a corresponding loading element (like `<link>` or `<script>` referencing Google Fonts or a verified CDN) in the HTML file. Unused declared fonts or undeclared font loading should be avoided.
+
+### Event Interaction Exclusivity
+When an element defines a double click handler (`onDoubleClick` / `dblclick`) for an action (e.g., editing), it must not define a simple click handler (`onClick` / `click`) performing a similar or conflicting action. Click and double click events on the same element must be designed to be mutually exclusive to avoid accidental triggers.
+
+### MIME Types in DataTransfer
+For drag-and-drop interactions (`DragEvent` and `dataTransfer.setData`), standard MIME types (such as `text/plain`, `application/json`) or custom MIME types with the standard prefix `application/x-` (e.g., `application/x-app-item`) must be used. Custom types without standard prefixes are unsupported on several browsers and are prohibited.
+
+### Programmatic DOM Safety
+Dynamic operations that create temporary elements (such as building a temporary `<a>` element programmatically to trigger a file download) must append the element to the document body (`document.body.appendChild`) before simulating the click, and immediately clean it up from the DOM (`document.body.removeChild`) and release memory references (e.g., `URL.revokeObjectURL(url)`) afterwards.
+
+---
+
 ## Audit checklist
 
 ### Security (critical)

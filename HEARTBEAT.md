@@ -58,7 +58,10 @@ O arquivo JSON deve seguir este formato:
     "destructive_operations_strategy": null,
     "storage_strategy": null,
     "accessibility_level": null,
-    "max_lines_per_file": null
+    "max_lines_per_file": null,
+    "primary_language": null,
+    "typography_strategy": null,
+    "keyboard_shortcuts": null
   },
   "artifacts": {
     "goal": "input/goal.md",
@@ -69,6 +72,15 @@ O arquivo JSON deve seguir este formato:
     "review": "artifacts/review.md",
     "critic": "artifacts/critic.md"
   },
+  "prevention_guardrails": [],
+  "quality_score": {
+    "visual": null,
+    "ux": null,
+    "functionality": null,
+    "code_quality": null,
+    "tests": null,
+    "security": null
+  },
   "errors": [],
   "updated_at": "YYYY-MM-DDTHH:mm:ssZ"
 }
@@ -76,3 +88,9 @@ O arquivo JSON deve seguir este formato:
 
 ### 4.1 Retrocompatibilidade (Backward Compatibility)
 Para garantir compatibilidade com runs legadas, se o `state.json` lido pelo agente não possuir alguns dos novos campos em `interview_decisions` (como `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`), o agente deve tratá-los como opcionais ou assumir valor default `null` para evitar falha catastrófica no parse ou na transição de fases.
+
+### 4.2 Guardrails de Prevenção (`prevention_guardrails`)
+O array `prevention_guardrails` registra quais guardrails preventivos foram aplicados durante a run. Cada entrada é uma string descritiva (ex: `"SEO_META_TAGS"`, `"FONT_LOADING_VERIFIED"`, `"SANITIZATION_APPLIED"`). Isso permite auditoria retroativa e melhoria contínua do protocolo.
+
+### 4.3 Score de Qualidade (`quality_score`)
+O objeto `quality_score` é preenchido progressivamente pelas fases de validação (4), revisão (5) e crítica (6). Cada dimensão recebe uma nota de 0 a 10. Isso permite comparar a qualidade entre runs e identificar tendências de regressão.

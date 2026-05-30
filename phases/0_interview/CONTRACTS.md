@@ -6,4 +6,4 @@
 
 ## 2. Saídas (Output)
 - **`runs/run-XXX/input/goal.md`**: Arquivo consolidando o objetivo geral e as decisões tomadas.
-- **`runs/run-XXX/state.json`**: Atualização do campo `"interview_decisions"` com as respostas (linguagem, escopo, aceitação, integrações, restrições, e os novos campos: `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`).
+- **`runs/run-XXX/state.json`**: Atualização do campo `"interview_decisions"` com as respostas (linguagem, escopo, aceitação, integrações, restrições, e os campos expandidos: `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`, `primary_language`, `typography_strategy`, `keyboard_shortcuts`).

@@ -117,6 +117,15 @@ Reference these guidelines when:
 - `advanced-init-once` - Initialize app once per app load
 - `advanced-use-latest` - useLatest for stable callback refs
 
+## Architectural Rules (React/Next.js)
+
+### State Separation and Decoupling
+- **Decoupled Providers:** Avoid tight/bidirectional coupling or circular references between global React Context Providers (e.g., `ContextA` depending on `ContextB` which in turn depends on `ContextA`). If cross-communication is required, use callback injection, event listeners/emitters, or merge them into a single consolidated domain provider.
+- **Domain Separation:** Split global state (e.g., Context API or Zustand stores) by logical boundaries (e.g., data state vs UI/modal state vs filter state) to prevent unnecessary re-renders of components that only need a subset of the state.
+
+### Stable Dependency Arrays
+- **Stablized Callbacks in Hooks:** Functions or callbacks included in hook dependency arrays (`useEffect`, `useMemo`, `useCallback`) MUST be stabilized using `useCallback` or `useRef`. Including unstable function references that are recreated on every render causes infinite re-render loops or unexpected side-effects.
+
 ## How to Use
 
 Read individual rule files for detailed explanations and code examples:

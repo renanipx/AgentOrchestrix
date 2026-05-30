@@ -350,6 +350,8 @@ All generated code must:
 - Use the framework/library the user specified (or ask if not specified)
 - Avoid inline styles — use proper CSS architecture
 - Prefer modern CSS (grid, flexbox, container queries, :has(), etc.)
+- **Complete Animations (Entry + Exit):** Any UI element that renders with an entrance animation (e.g., fade-in, slide-in, zoom-in) must also have a corresponding exit animation (e.g., fade-out, slide-out, zoom-out) when transition or removal from the DOM happens. Sudden element removal without transition constitutes a visual defect.
+- **Contextual Controls (Hover vs Touch):** Contextual or secondary action buttons (e.g., delete/edit icons on items) that are hidden by default and shown on hover on desktop devices must be configured to be permanently visible on touch-only devices. Use media queries such as `@media (hover: none)` to override hover-dependent visibility for touch users.
 
 ## Scaling to Project Size
 

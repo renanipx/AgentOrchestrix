@@ -15,6 +15,8 @@
   # Architecture Alignment (Alinhamento com o plano de arquitetura)
   # Syntax And Test Check (Resultado da análise estática e execução de testes)
   # UX Compliance (Conformidade de UX: formulários, empty states, feedback de erro)
+  # Performance Review (Memoização, lógica duplicada, dependency arrays)
+  # Cross-Browser Compatibility (Compatibilidade entre navegadores)
   # Issues (Lista de problemas identificados)
   # Recommendation (Recomendações e próximos passos)
   ```

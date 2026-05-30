@@ -13,5 +13,7 @@
   # Interaction Map (Mapa de Interações e Acessibilidade)
   # Data Models (Estruturas de Dados / Estados)
   # Storage Strategy (Limites e Estratégia de Persistência)
+  # Performance Strategy (Memoização, Dependency Arrays, Lazy Loading)
+  # Shared Utilities (Catálogo de Funções Utilitárias Compartilhadas)
   # Implementation Plan (Passo a passo da construção)
   ```
