@@ -126,6 +126,9 @@ Reference these guidelines when:
 ### Stable Dependency Arrays
 - **Stablized Callbacks in Hooks:** Functions or callbacks included in hook dependency arrays (`useEffect`, `useMemo`, `useCallback`) MUST be stabilized using `useCallback` or `useRef`. Including unstable function references that are recreated on every render causes infinite re-render loops or unexpected side-effects.
 
+### DOM Access Anti-Patterns
+- **No Imperative DOM Queries:** Components MUST NOT use `document.querySelector`, `document.getElementById`, or `document.getElementsBy*` to access or manipulate DOM elements managed by React. Use `useRef`, `forwardRef`, or callback refs instead. Imperative DOM queries bypass React's reconciliation and break when components re-render or class names change.
+
 ## How to Use
 
 Read individual rule files for detailed explanations and code examples:

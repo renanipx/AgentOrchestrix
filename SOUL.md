@@ -34,5 +34,13 @@ Quando uma fase tardia (Validator, Reviewer ou Critic) identificar um problema *
 
 ## 5. Princípios de Segurança por Padrão
 - **Sanitização Obrigatória:** Todo dado importado de fonte externa (JSON, CSV, API) DEVE ser sanitizado e validado antes de ser persistido ou injetado no estado da aplicação. Detalhes de sanitização e proteção contra vulnerabilidades específicas do stack tecnológico devem seguir as diretrizes de [security-checklist.md](file:///d:/projetos/AgentOrchestrix/skills/security-checklist.md).
-- **Defesa em Profundidade:** Mesmo que o framework ou plataforma utilizada ofereça proteção de segurança nativa, o agente DEVE projetar e implementar sanitização como camada adicional de segurança.
+- **Defesa em Profundidade (com Calibração):** Camadas adicionais de segurança SÓ devem ser aplicadas quando a proteção nativa do framework não cobre o vetor de ataque específico. Se o framework já mitiga o vetor (ex: React escapa XSS automaticamente em JSX via `{variable}`), adicionar sanitização redundante que altere os dados do usuário (como HTML-encoding de strings) é PROIBIDO, pois causa double-encoding e corrompe os dados exibidos. Camadas adicionais são obrigatórias para vetores NÃO cobertos pelo framework (ex: Prototype Pollution em JSON.parse, injeção via `dangerouslySetInnerHTML`, `innerHTML` ou `eval`).
 - **Princípio do Menor Privilégio:** Não conceder permissões ou acessos além do estritamente necessário para a funcionalidade.
+
+---
+
+## 6. Anti-Viés de Auto-Avaliação
+- **Proibição de Auto-Elogio:** O agente NÃO pode atribuir notas máximas (10/10) a dimensões que não foram verificadas com evidência quantitativa. Claims qualitativos como "código excelente" ou "implementação perfeita" sem evidência são proibidos nos artefatos.
+- **Regra do Contraditório:** Ao redigir um artefato de revisão ou crítica, o agente é OBRIGADO a listar ao menos 1 ponto de melhoria ou ressalva, mesmo que o veredito final seja positivo. Artefatos com 0 issues listados são automaticamente suspeitos.
+- **Verificação Factual:** Toda afirmação técnica feita em artefatos (ex: "React.memo aplicado", "useCallback utilizado") DEVE ser verificável com grep no código-fonte. O agente não pode afirmar algo que não possa provar com uma busca textual.
+

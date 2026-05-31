@@ -84,4 +84,9 @@ Nunca confie apenas em análises estáticas ou builds visuais quando uma funcion
 
 - **Tipagem Estrita (TypeScript):** É expressamente proibido o uso de casting forçado para `as any` em arquivos `.ts` ou `.tsx`. Você deve utilizar tipos explícitos, tipos union (ex: `as Category | 'all'`) ou asserções controladas com guards (`if (isType(value))`) para manter a segurança do compilador.
 - **Identificadores Únicos e Seguros:** Para a geração de chaves primárias e IDs de entidades no cliente (ex: IDs de tarefas, colunas), não utilize timestamps simples ou geradores baseados em probabilidade simples como `Date.now()` ou `Math.random()`. Você deve utilizar APIs criptograficamente seguras como `crypto.randomUUID()` (suportada por browsers modernos e Node.js) ou a biblioteca recomendada pelo stack (ex: `uuid`).
+  - **Dados de Seed/Iniciais:** Mesmo IDs de dados pré-populados (seed data, estado inicial padrão) devem utilizar o mesmo formato de geração que IDs criados em tempo de execução, para evitar inconsistência de formato e colisão em importações.
 - **Limites de Entrada (maxLength):** Todo campo de entrada textual (como `<input type="text">` ou `<textarea>`) deve conter a propriedade `maxLength` declarada com limites razoáveis de acordo com a regra de negócio (ex: 100 caracteres para títulos, 1000-2000 para descrições). Isso evita buffer overflows visuais e protege o parseador de dados.
+
+## 7. Feedback de Ações
+- **Proibição de Ações Silenciosas:** Toda ação acionada pelo usuário (clique, atalho de teclado, submit) DEVE produzir feedback observável (visual, toast, foco, ou mudança de estado). Se a ação não puder ser executada no estado atual (ex: atalho para focar um elemento que não existe), o sistema DEVE exibir um feedback explicativo (ex: toast informativo), não falhar silenciosamente.
+

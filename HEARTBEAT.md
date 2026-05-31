@@ -18,6 +18,17 @@ Se a fase atual for a `6_critic` e o Critic identificar um risco com severidade 
 1. Concluir a run (assumir estado `completed`).
 2. Retornar a run para a Fase `2_architect` ou `3_builder` com uma "Tarefa de Refatoração baseada no Critic", permitindo um ciclo de polimento estrutural antes da entrega final.
 
+### 1.2 Protocolo de Auto-Validação de Transição
+Antes de modificar o campo `"current_phase"` no `state.json`, o agente DEVE imprimir no chat um bloco markdown contendo a seguinte lista de verificação preenchida:
+```markdown
+### 🔍 Auto-Auditoria de Transição: [Fase_Atual] -> [Próxima_Fase]
+- [ ] Todos os artefatos de saída exigidos pelo CONTRACTS.md foram gerados e salvos? (Listar caminhos físicos)
+- [ ] Fiz uma leitura completa do state.json final para garantir sintaxe JSON válida (sem vírgulas sobressalentes, aspas fechadas)?
+- [ ] O array "completed_phases" foi atualizado com a fase que estou encerrando?
+- [ ] O campo "updated_at" foi preenchido com o timestamp atual?
+```
+*Nota: Se qualquer check for falso, a transição está bloqueada e o agente deve corrigir o problema antes de salvar o `state.json`.*
+
 ---
 
 ## 2. Auditoria de Consistência
@@ -73,6 +84,7 @@ O arquivo JSON deve seguir este formato:
     "critic": "artifacts/critic.md"
   },
   "prevention_guardrails": [],
+  "loaded_skills": [],
   "quality_score": {
     "visual": null,
     "ux": null,
@@ -87,10 +99,51 @@ O arquivo JSON deve seguir este formato:
 ```
 
 ### 4.1 Retrocompatibilidade (Backward Compatibility)
-Para garantir compatibilidade com runs legadas, se o `state.json` lido pelo agente não possuir alguns dos novos campos em `interview_decisions` (como `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`), o agente deve tratá-los como opcionais ou assumir valor default `null` para evitar falha catastrófica no parse ou na transição de fases.
+Para garantir compatibilidade com runs legadas, se o `state.json` lido pelo agente não possuir alguns dos novos campos em `interview_decisions` (como `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`) ou o campo `"loaded_skills"`, o agente deve tratá-los como opcionais ou assumir valor default `null` (e `[]` para `loaded_skills`) para evitar falha catastrófica no parse ou na transição de fases.
+
 
 ### 4.2 Guardrails de Prevenção (`prevention_guardrails`)
 O array `prevention_guardrails` registra quais guardrails preventivos foram aplicados durante a run. Cada entrada é uma string descritiva (ex: `"SEO_META_TAGS"`, `"FONT_LOADING_VERIFIED"`, `"SANITIZATION_APPLIED"`). Isso permite auditoria retroativa e melhoria contínua do protocolo.
 
+#### Enforcement de Guardrails
+Cada guardrail registrado no array DEVE ter um check de verificação programático associado no [build-validation-checklist.md](file:///d:/projetos/AgentOrchestrix/skills/build-validation-checklist.md). Guardrails sem check programático correspondente NÃO PODEM ser registrados — isso previne guardrails declarativos sem enforcement real. A tabela de mapeamento é:
+
+| Guardrail | Check obrigatório |
+|-----------|-------------------|
+| `STRICT_TYPES_NO_ANY` | `grep "as any"` retorna 0 ocorrências em `src/` |
+| `SECURE_UUID_GENERATION` | `grep "Date.now()\|Math.random()"` retorna 0 ocorrências |
+| `SEO_META_TAGS` | `grep "<title>"` + `grep "name=\"description\""` presentes |
+| `FONT_LOADING_VERIFIED` | Fontes no CSS possuem `<link>` correspondente no HTML |
+| `PERSISTENCE_ERRORS_UI_HANDLED` | Todo `catch` com `localStorage` possui chamada a toast/modal |
+| `FILE_SIZE_LIMIT_COMPLIANCE` | Todos os componentes possuem < N linhas |
+
 ### 4.3 Score de Qualidade (`quality_score`)
-O objeto `quality_score` é preenchido progressivamente pelas fases de validação (4), revisão (5) e crítica (6). Cada dimensão recebe uma nota de 0 a 10. Isso permite comparar a qualidade entre runs e identificar tendências de regressão.
+O objeto `quality_score` é preenchido progressivamente pelas fases de validação (4), revisão (5) e crítica (6). Cada dimensão recebe uma nota de 0 a 10 com base na rubrica abaixo. Notas iguais ou superiores a 8 DEVEM ter justificativa explícita no artefato correspondente.
+
+#### Rubrica de `tests`:
+| Nota | Critério |
+|------|----------|
+| 0-3  | Sem testes ou apenas smoke test básico |
+| 4-5  | Testes cobrem < 40% das funções/utilitários |
+| 6-7  | Testes cobrem 40-70% das funções, sem testes de componentes |
+| 8-9  | Testes cobrem > 70% incluindo integração ou componentes |
+| 10   | Cobertura > 90% com testes E2E ou visuais |
+
+#### Rubrica de `code_quality`:
+| Nota | Critério |
+|------|----------|
+| 0-3  | Múltiplas violações de guardrails (`as any`, lógica duplicada) |
+| 4-5  | 1-2 violações menores, estrutura básica respeitada |
+| 6-7  | Zero violações, memoização parcial, modularização ok |
+| 8-9  | Zero violações, memoização completa, performance otimizada |
+| 10   | Zero violações + AST/lint limpo + bundle analysis realizado |
+
+#### Rubrica de `security`:
+| Nota | Critério |
+|------|----------|
+| 0-3  | Sem sanitização ou validação de dados externos |
+| 4-5  | Validação de schema presente, sem sanitização |
+| 6-7  | Schema + sanitização presente, sem testes de segurança |
+| 8-9  | Schema + sanitização + testes de segurança + XSS mitigado |
+| 10   | Tudo anterior + auditoria com ferramenta externa |
+

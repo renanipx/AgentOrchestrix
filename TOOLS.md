@@ -20,3 +20,17 @@ Este arquivo regula como a IDE utiliza suas ferramentas nativas no ciclo do Agen
 Ao concluir a fase de Build (Fase 3) ou iniciar a fase de Validação (Fase 4), o agente DEVE executar automaticamente as verificações estruturais e de qualidade utilizando suas ferramentas nativas.
 
 As regras de validação específicas de cada tecnologia, incluindo comandos de busca e conformidade do código gerado, estão catalogadas no documento [build-validation-checklist.md](file:///d:/projetos/AgentOrchestrix/skills/build-validation-checklist.md). O Validator e o Builder devem carregar e seguir esta lista para auditoria automática do stack do projeto.
+
+---
+
+## 4. Verificação Cruzada (Artefato ↔ Código)
+Quando um artefato de documentação (`architecture.md`, `review.md`, `critic.md`) faz uma afirmação técnica sobre o código (ex: "React.memo aplicado no componente X", "contexto chamado BoardContext"), o agente DEVE utilizar `grep_search` para validar que a afirmação é factually verdadeira antes de incluí-la no artefato.
+
+**Exemplos de verificações obrigatórias:**
+- Nomes de arquivos/componentes listados no `architecture.md` → verificar com `list_dir`
+- Claims de uso de `React.memo`, `useCallback`, `useMemo` → verificar com `grep_search`
+- Nomes de contextos React → verificar exportações com `grep_search`
+- Estrutura de pastas declarada → verificar com `list_dir`
+
+Se a verificação falhar, o agente DEVE corrigir o artefato para refletir a realidade do código, ou corrigir o código para atender o artefato — nunca deixar a divergência.
+

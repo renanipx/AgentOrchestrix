@@ -24,6 +24,7 @@ grep_search -Query "name=\"description\"" -SearchPath "d:/projetos/AgentOrchestr
 - **Check Obrigatório:**
   - Para cada fonte tipográfica customizada declarada nos arquivos de estilo CSS via `font-family` (ex: `Outfit`, `Inter`, `Poppins`), deve existir um elemento `<link>` ou tag `<style>` correspondente no HTML que efetue o carregamento da fonte (via Google Fonts ou outro CDN confiável).
   - Fontes declaradas mas não carregadas constituem falha estrutural.
+  - **Check Bidirecional:** Para cada fonte carregada via `<link>` no HTML (ex: Google Fonts), deve existir ao menos uma referência a essa fonte em `font-family` nos arquivos CSS. Fontes carregadas mas nunca referenciadas no CSS constituem falha estrutural (recursos desperdiçados e latência desnecessária).
 
 *Comando de Validação Sugerido:*
 ```powershell
@@ -97,3 +98,17 @@ grep_search -Query "import React from" -SearchPath "d:/projetos/AgentOrchestrix/
 ### 4.2 Controles Visuais Responsivos
 - **Check Obrigatório:**
   - Ações secundárias exibidas em hover em tabelas ou cards (como botões de exclusão ou edição) devem suportar dispositivos touch. Verifique a existência de diretivas `@media (hover: none)` garantindo que controles de hover sejam sempre visíveis em telas touch.
+
+---
+
+## 5. Build Output & Bundle Analysis
+
+### 5.1 Registro de Tamanho do Bundle
+- **Check Obrigatório:**
+  - O `validation_report.md` DEVE registrar o tamanho total do bundle JS e CSS (raw e gzip) conforme saída do build de produção.
+  - Se a run for uma iteração de uma run anterior com o mesmo objetivo, o Validator DEVE comparar os tamanhos e justificar qualquer aumento > 5%.
+
+### 5.2 Verificação de Dead Code
+- **Check Recomendado:**
+  - Buscar imports não utilizados com análise do build output (módulos transformados vs módulos declarados).
+

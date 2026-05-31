@@ -10,3 +10,6 @@
 - **Conformidade com Decisões da Fase 0:** O Builder DEVE garantir que todas as decisões registradas em `interview_decisions` (idioma, limites de linhas, tipografia, acessibilidade, persistência) sejam implementadas e respeitadas no código produzido.
 - **Feedback de Erros de Persistência:** Todo bloco de captura de exceção (`catch`) ou tratamento de falhas que envolva persistência ou chamadas de I/O críticas DEVE expor um feedback visual claro e amigável ao usuário final na interface. Ocultar erros ou limitá-los a logs internos do console é proibido.
 - **Validação de Entradas e Sanitização:** O Builder DEVE aplicar as regras de validação estrutural de tipos e sanitização de dados da skill de segurança a qualquer fluxo que receba dados de fontes externas antes de sua persistência ou processamento.
+- **Carregamento Seletivo de Skills:** Para otimizar o tamanho do contexto e evitar desperdício de tokens, o Builder DEVE consultar e ler apenas os arquivos de `skills/` cujos identificadores ou nomes correspondam diretamente aos itens listados em `loaded_skills` no `state.json`. A leitura de diretrizes de outros stacks ou skills não mapeadas é expressamente proibida.
+
+

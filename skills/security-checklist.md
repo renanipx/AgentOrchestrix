@@ -15,17 +15,17 @@ Ao clonar, fundir ou parsear objetos dinâmicos obtidos de dados externos, você
 - `prototype`
 
 **Implementação Recomendada para parsing seguro:**
-```javascript
-function sanitizeData(input) {
+```typescript
+function sanitizeData(input: unknown): unknown {
   if (typeof input !== 'object' || input === null) {
-    return input;
+    return input; // primitivos passam direto
   }
   
   if (Array.isArray(input)) {
     return input.map(sanitizeData);
   }
   
-  const sanitized = {};
+  const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(input)) {
     // Pula chaves perigosas de protótipo
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
@@ -53,4 +53,29 @@ element.innerHTML = DOMPurify.sanitize(userInput);
 
 ## 4. Defesa em Profundidade
 
-Mesmo que a linguagem ou framework em uso prometa proteção nativa (como a escapagem automática de JSX no React), o desenvolvedor deve assumir o pior caso e tratar os dados na entrada/persistência, adicionando camadas adicionais de validação.
+A defesa em profundidade aplica camadas de segurança para vetores que o framework NÃO cobre nativamente. Exemplos de camadas necessárias:
+- **Prototype Pollution**: `JSON.parse` não filtra `__proto__` — sanitização obrigatória.
+- **SQL/NoSQL Injection**: Mesmo com ORM, validar inputs antes de queries.
+
+Exemplos de camadas **DESNECESSÁRIAS** (onde o framework já protege):
+- **XSS em React JSX**: React escapa automaticamente `{variable}` em JSX. Aplicar `sanitizeString()` em dados renderizados via JSX causa double-encoding e corrompe a exibição. Sanitização de XSS só é necessária se o código usar `dangerouslySetInnerHTML`, `innerHTML` ou `document.write()`.
+
+## 5. Testando Sanitização
+Testes de sanitização DEVEM verificar o efeito global, não apenas o objeto sanitizado:
+
+### Teste correto de Prototype Pollution:
+```typescript
+it('should not pollute Object.prototype', () => {
+  const malicious = JSON.parse('{"__proto__": {"polluted": true}}');
+  sanitizeData(malicious);
+  // Verificar que o protótipo GLOBAL não foi afetado
+  expect((Object.prototype as any).polluted).toBeUndefined();
+});
+```
+
+### Teste INCORRETO (não valida o vetor real):
+```typescript
+// ❌ Isso testa o objeto retornado, não o protótipo global
+expect(sanitized.__proto__.polluted).toBeUndefined();
+```
+
