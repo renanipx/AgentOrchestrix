@@ -19,6 +19,7 @@ Este arquivo orienta a "atitude" e a lógica cognitiva do agente de IDE durante 
 ## 3. Estilo de Comunicação
 - Seja sempre objetivo, focado e conciso nas interações do chat.
 - Não faça rodeios ou explicações prolixas ao reportar o fim de uma fase; apenas forneça o link do artefato gerado.
+- **Idioma dos Artefatos:** Os documentos e códigos gerados pelo agente nas fases subsequentes da run devem respeitar a propriedade `primary_language` acordada na entrevista inicial. Embora o protocolo principal e suas instruções usem o Português (e skills de terceiros possam estar em Inglês), a entrega de negócio do agente deve ser localizada conforme a preferência do usuário.
 
 ---
 
@@ -33,7 +34,7 @@ Quando uma fase tardia (Validator, Reviewer ou Critic) identificar um problema *
 ---
 
 ## 5. Princípios de Segurança por Padrão
-- **Sanitização Obrigatória:** Todo dado importado de fonte externa (JSON, CSV, API) DEVE ser sanitizado e validado antes de ser persistido ou injetado no estado da aplicação. Detalhes de sanitização e proteção contra vulnerabilidades específicas do stack tecnológico devem seguir as diretrizes de [security-checklist.md](file:///d:/projetos/AgentOrchestrix/skills/security-checklist.md).
+- **Sanitização Obrigatória:** Todo dado importado de fonte externa (JSON, CSV, API) DEVE ser sanitizado e validado antes de ser persistido ou injetado no estado da aplicação. Detalhes de sanitização e proteção contra vulnerabilidades específicas do stack tecnológico devem seguir as diretrizes de [security-checklist.md](skills/security-checklist.md).
 - **Defesa em Profundidade (com Calibração):** Camadas adicionais de segurança SÓ devem ser aplicadas quando a proteção nativa do framework não cobre o vetor de ataque específico. Se o framework já mitiga o vetor (ex: React escapa XSS automaticamente em JSX via `{variable}`), adicionar sanitização redundante que altere os dados do usuário (como HTML-encoding de strings) é PROIBIDO, pois causa double-encoding e corrompe os dados exibidos. Camadas adicionais são obrigatórias para vetores NÃO cobertos pelo framework (ex: Prototype Pollution em JSON.parse, injeção via `dangerouslySetInnerHTML`, `innerHTML` ou `eval`).
 - **Princípio do Menor Privilégio:** Não conceder permissões ou acessos além do estritamente necessário para a funcionalidade.
 

@@ -1,0 +1,54 @@
+{
+  "run_id": "run-XXX",
+  "command": "orquestrar",
+  "goal": "Descrição do objetivo principal",
+  "status": "created",
+  "current_phase": "0_interview",
+  "completed_phases": [],
+  "protocol_version": "1.0.0",
+  "created_at": "2026-06-06T18:00:00Z",
+  "updated_at": "2026-06-06T18:00:00Z",
+  "parent_run": null,
+  "phase_history": [],
+  "interview_decisions": {
+    "language_runtime": null,
+    "technology_stack": {
+      "frontend": null,
+      "backend": null,
+      "database": null,
+      "styling": null
+    },
+    "scope": null,
+    "acceptance_criteria": null,
+    "integrations_data": null,
+    "constraints": null,
+    "destructive_operations_strategy": null,
+    "storage_strategy": null,
+    "accessibility_level": null,
+    "max_lines_per_file": null,
+    "primary_language": null,
+    "typography_strategy": null,
+    "keyboard_shortcuts": null
+  },
+  "artifacts": {
+    "goal": "input/goal.md",
+    "task": "artifacts/task.md",
+    "architecture": "artifacts/architecture.md",
+    "build_report": "artifacts/build_report.md",
+    "validation_report": "artifacts/validation_report.md",
+    "review": "artifacts/review.md",
+    "critic": "artifacts/critic.md",
+    "planning_summary": "artifacts/planning_summary.md"
+  },
+  "prevention_guardrails": [],
+  "loaded_skills": [],
+  "quality_score": {
+    "visual": null,
+    "ux": null,
+    "functionality": null,
+    "code_quality": null,
+    "tests": null,
+    "security": null
+  },
+  "errors": []
+}

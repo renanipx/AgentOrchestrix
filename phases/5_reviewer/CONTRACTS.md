@@ -1,11 +1,11 @@
 # CONTRACTS — Fase 5: Reviewer Agent
 
 ## 1. Entradas (Input)
-- `task.md`
-- `architecture.md`
-- `build_report.md`
-- `validation_report.md`
-- Código fonte implementado.
+- `runs/run-XXX/artifacts/task.md`
+- `runs/run-XXX/artifacts/architecture.md`
+- `runs/run-XXX/artifacts/build_report.md`
+- `runs/run-XXX/artifacts/validation_report.md`
+- Código fonte implementado (em `runs/run-XXX/generated/`).
 
 ## 2. Saídas (Output)
 - **`runs/run-XXX/artifacts/review.md`**: Documento contendo obrigatoriamente estas seções:

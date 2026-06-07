@@ -17,3 +17,5 @@
   # Shared Utilities (Catálogo de Funções Utilitárias Compartilhadas)
   # Implementation Plan (Passo a passo da construção)
   ```
+- **`runs/run-XXX/artifacts/planning_summary.md`** (obrigatório se o comando for `planejar:`): Documento consolidado contendo links e resumos para os artefatos `goal.md` (em `runs/run-XXX/input/goal.md`), `task.md` e `architecture.md`.
+

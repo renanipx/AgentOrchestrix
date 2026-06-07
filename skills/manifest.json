@@ -1,0 +1,68 @@
+{
+  "skills": [
+    {
+      "id": "build-validation-checklist",
+      "name": "Build Validation Checklist",
+      "path": "skills/build-validation-checklist.md",
+      "version": "1.0.0",
+      "stacks": ["*"],
+      "phases": ["4_validator", "3_builder"]
+    },
+    {
+      "id": "coding-guidelines",
+      "name": "Coding Guidelines",
+      "path": "skills/coding-guidelines.md",
+      "version": "1.0.0",
+      "stacks": ["*"],
+      "phases": ["3_builder", "5_reviewer"]
+    },
+    {
+      "id": "frontend-blueprint",
+      "name": "Frontend Blueprint",
+      "path": "skills/frontend-blueprint.md",
+      "version": "1.0.0",
+      "stacks": ["react", "nextjs", "vanilla-js"],
+      "phases": ["0_interview", "2_architect", "3_builder"]
+    },
+    {
+      "id": "react-best-practices",
+      "name": "React Best Practices",
+      "path": "skills/react-best-practices/SKILL.md",
+      "version": "1.0.0",
+      "stacks": ["react", "nextjs"],
+      "phases": ["2_architect", "3_builder", "5_reviewer", "6_critic"]
+    },
+    {
+      "id": "security-checklist",
+      "name": "Security Checklist",
+      "path": "skills/security-checklist.md",
+      "version": "1.0.0",
+      "stacks": ["*"],
+      "phases": ["3_builder", "6_critic"]
+    },
+    {
+      "id": "spec-driven-planning",
+      "name": "Spec Driven Planning",
+      "path": "skills/spec-driven-planning.md",
+      "version": "1.0.0",
+      "stacks": ["*"],
+      "phases": ["1_planner"]
+    },
+    {
+      "id": "vanilla-js-mastery",
+      "name": "Vanilla JS Mastery",
+      "path": "skills/vanilla-js-mastery.md",
+      "version": "1.0.0",
+      "stacks": ["vanilla-js"],
+      "phases": ["3_builder", "6_critic"]
+    },
+    {
+      "id": "web-best-practices",
+      "name": "Web Best Practices",
+      "path": "skills/web-best-practices.md",
+      "version": "1.0.0",
+      "stacks": ["react", "nextjs", "vanilla-js"],
+      "phases": ["2_architect", "3_builder", "6_critic"]
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AgentOrchestrixState",
+  "description": "Schema de validação para o estado de execução (state.json) do protocolo AgentOrchestrix.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "command",
+    "goal",
+    "status",
+    "current_phase",
+    "completed_phases",
+    "protocol_version",
+    "created_at",
+    "updated_at",
+    "interview_decisions",
+    "artifacts",
+    "prevention_guardrails",
+    "loaded_skills",
+    "quality_score",
+    "errors"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^run-\\d{3,4}$",
+      "description": "Identificador único da run (ex: run-001)"
+    },
+    "command": {
+      "type": "string",
+      "enum": ["orquestrar", "planejar", "continuar-run", "validar-run", "analisar"],
+      "description": "Comando invocado para inicializar ou gerenciar a run"
+    },
+    "goal": {
+      "type": "string",
+      "description": "Objetivo principal da run"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["created", "waiting_for_user", "running", "blocked", "failed", "completed"],
+      "description": "Estado atual da run"
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": ["0_interview", "1_planner", "2_architect", "3_builder", "4_validator", "5_reviewer", "6_critic", "completed"],
+      "description": "Fase atual em execução"
+    },
+    "completed_phases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["0_interview", "1_planner", "2_architect", "3_builder", "4_validator", "5_reviewer", "6_critic"]
+      },
+      "description": "Fases que já foram concluídas"
+    },
+    "protocol_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Versão do protocolo AgentOrchestrix"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 da criação da run"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp ISO 8601 da última atualização da run"
+    },
+    "parent_run": {
+      "type": ["string", "null"],
+      "pattern": "^(run-\\d{3,4})?$",
+      "description": "ID da run pai da qual esta run herda decisões (se aplicável)"
+    },
+    "phase_history": {
+      "type": "array",
+      "description": "Histórico de transições e rollback de fases",
+      "items": {
+        "type": "object",
+        "required": ["phase", "status", "timestamp"],
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": ["0_interview", "1_planner", "2_architect", "3_builder", "4_validator", "5_reviewer", "6_critic", "completed"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["running", "completed", "failed", "blocked", "waiting_for_user"]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "interview_decisions": {
+      "type": "object",
+      "description": "Decisões consolidadas na Fase 0 (Entrevista)",
+      "required": [
+        "scope",
+        "acceptance_criteria",
+        "integrations_data",
+        "constraints",
+        "destructive_operations_strategy",
+        "storage_strategy",
+        "accessibility_level",
+        "max_lines_per_file",
+        "primary_language",
+        "typography_strategy",
+        "keyboard_shortcuts"
+      ],
+      "properties": {
+        "language_runtime": {
+          "type": ["string", "null"],
+          "description": "Depreciado: mantido para retrocompatibilidade. Usar technology_stack."
+        },
+        "technology_stack": {
+          "type": ["object", "null"],
+          "description": "Múltiplos stacks de tecnologia definidos para o projeto",
+          "properties": {
+            "frontend": {
+              "type": ["string", "object", "null"]
+            },
+            "backend": {
+              "type": ["string", "object", "null"]
+            },
+            "database": {
+              "type": ["string", "object", "null"]
+            },
+            "styling": {
+              "type": ["string", "object", "null"]
+            }
+          },
+          "additionalProperties": true
+        },
+        "scope": {
+          "type": ["string", "array", "null"]
+        },
+        "acceptance_criteria": {
+          "type": ["string", "array", "null"]
+        },
+        "integrations_data": {
+          "type": ["string", "array", "null"]
+        },
+        "constraints": {
+          "type": ["string", "array", "null"]
+        },
+        "destructive_operations_strategy": {
+          "type": ["string", "null"]
+        },
+        "storage_strategy": {
+          "type": ["string", "null"]
+        },
+        "accessibility_level": {
+          "type": ["string", "null"]
+        },
+        "max_lines_per_file": {
+          "type": ["integer", "null"]
+        },
+        "primary_language": {
+          "type": ["string", "null"]
+        },
+        "typography_strategy": {
+          "type": ["string", "null"]
+        },
+        "keyboard_shortcuts": {
+          "type": ["string", "array", "null"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["goal", "task", "architecture", "build_report", "validation_report", "review", "critic"],
+      "properties": {
+        "goal": { "type": "string" },
+        "task": { "type": "string" },
+        "architecture": { "type": "string" },
+        "build_report": { "type": "string" },
+        "validation_report": { "type": "string" },
+        "review": { "type": "string" },
+        "critic": { "type": "string" },
+        "planning_summary": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "prevention_guardrails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "loaded_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "quality_score": {
+      "type": "object",
+      "required": ["visual", "ux", "functionality", "code_quality", "tests", "security"],
+      "properties": {
+        "visual": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+        "ux": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+        "functionality": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+        "code_quality": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+        "tests": { "type": ["number", "null"], "minimum": 0, "maximum": 10 },
+        "security": { "type": ["number", "null"], "minimum": 0, "maximum": 10 }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

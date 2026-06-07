@@ -16,8 +16,8 @@ Este guia define as validações automáticas, estruturais e de qualidade que o 
 *Comando de Validação Sugerido:*
 ```powershell
 # Buscar tags SEO
-grep_search -Query "<title>" -SearchPath "d:/projetos/AgentOrchestrix/generated"
-grep_search -Query "name=\"description\"" -SearchPath "d:/projetos/AgentOrchestrix/generated"
+grep_search -Query "<title>" -SearchPath "<run_generated_path>"
+grep_search -Query "name=\"description\"" -SearchPath "<run_generated_path>"
 ```
 
 ### 1.2 Correspondência de Fontes e Assets Externos
@@ -29,7 +29,7 @@ grep_search -Query "name=\"description\"" -SearchPath "d:/projetos/AgentOrchestr
 *Comando de Validação Sugerido:*
 ```powershell
 # Buscar declarações de fontes no CSS
-grep_search -Query "font-family" -SearchPath "d:/projetos/AgentOrchestrix/generated"
+grep_search -Query "font-family" -SearchPath "<run_generated_path>"
 ```
 
 ---
@@ -44,7 +44,7 @@ grep_search -Query "font-family" -SearchPath "d:/projetos/AgentOrchestrix/genera
 *Comando de Validação Sugerido:*
 ```powershell
 # Buscar por "as any"
-grep_search -Query "as any" -SearchPath "d:/projetos/AgentOrchestrix/generated"
+grep_search -Query "as any" -SearchPath "<run_generated_path>"
 ```
 
 ### 2.2 Geração de IDs Únicos
@@ -55,8 +55,8 @@ grep_search -Query "as any" -SearchPath "d:/projetos/AgentOrchestrix/generated"
 *Comando de Validação Sugerido:*
 ```powershell
 # Buscar geradores fracos
-grep_search -Query "Date.now()" -SearchPath "d:/projetos/AgentOrchestrix/generated"
-grep_search -Query "Math.random()" -SearchPath "d:/projetos/AgentOrchestrix/generated"
+grep_search -Query "Date.now()" -SearchPath "<run_generated_path>"
+grep_search -Query "Math.random()" -SearchPath "<run_generated_path>"
 ```
 
 ### 2.3 Tratamento de Persistência e Logs
@@ -66,7 +66,7 @@ grep_search -Query "Math.random()" -SearchPath "d:/projetos/AgentOrchestrix/gene
 *Comando de Validação Sugerido:*
 ```powershell
 # Buscar tratamentos de erro silenciosos
-grep_search -Query "console.error" -SearchPath "d:/projetos/AgentOrchestrix/generated"
+grep_search -Query "console.error" -SearchPath "<run_generated_path>"
 ```
 
 ---
@@ -80,7 +80,7 @@ grep_search -Query "console.error" -SearchPath "d:/projetos/AgentOrchestrix/gene
 *Comando de Validação Sugerido:*
 ```powershell
 # Buscar imports desnecessários
-grep_search -Query "import React from" -SearchPath "d:/projetos/AgentOrchestrix/generated"
+grep_search -Query "import React from" -SearchPath "<run_generated_path>"
 ```
 
 ### 3.2 Dependency Arrays de Hooks Estáveis
