@@ -9,7 +9,7 @@
   ```markdown
   # Summary (Status geral de sucesso ou falha)
   # Commands Executed (Quais comandos foram disparados)
-  # Results (Logs e saídas de sucesso)
-  # Failures (Logs e saídas de erro / testes quebrados)
+  # Results (Logs e saídas de sucesso - DEVE conter o stdout real do terminal)
+  # Failures (Logs e saídas de erro / testes quebrados - DEVE conter o stdout real do terminal)
   # Skipped Checks (O que foi ignorado e o motivo)
   ```

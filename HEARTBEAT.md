@@ -45,8 +45,12 @@ Antes de modificar o campo `"current_phase"` no `state.json`, o agente DEVE impr
 - [ ] Fiz uma leitura completa do state.json final para garantir sintaxe JSON válida (sem vírgulas sobressalentes, aspas fechadas)?
 - [ ] O array "completed_phases" foi atualizado com a fase que estou encerrando?
 - [ ] O campo "updated_at" foi preenchido com o timestamp atual?
+- [ ] O critic.md contém algum risco classificado como [ALTO]?
+      Se SIM → status DEVE ser "waiting_for_user". Transição para "completed" bloqueada.
+      Se NÃO → status "completed" é permitido.
 ```
 *Nota: Se qualquer check for falso, a transição está bloqueada e o agente deve corrigir o problema antes de salvar o `state.json`.*
+
 
 ### 1.3 Mecanismo de Recovery/Rollback entre Fases
 Se uma fase tardia de validação ou verificação falhar, a execução pode entrar em estado de `blocked` ou `failed`. Para recuperar e prosseguir, o agente deve efetuar o **rollback** de estado.
@@ -63,7 +67,7 @@ A tabela de mapeamento de rollback oficial é:
 1. Atualizar `"status"` para `"running"`.
 2. Definir `"current_phase"` para a fase de destino de rollback.
 3. Remover as fases posteriores à fase de destino de rollback do array `"completed_phases"`.
-4. Registrar o evento em `"phase_history"` com `"status": "running"` e o timestamp correspondente.
+4. Registrar o evento em `"phase_history"` com `"status": "running"`, o timestamp correspondente, e preencher o array opcional `"rollback_changes"` detalhando cada arquivo que necessita de correção/modificação e o respectivo motivo (ex: `[{"file": "src/components/Card.jsx", "reason": "Falta de sincronização do estado local com props"}]`).
 
 ### 1.4 Validação de Duplicata de Runs
 Antes de criar uma nova run, o agente DEVE verificar se o diretório `runs/run-XXX/` desejado já existe.
@@ -75,6 +79,15 @@ Para runs que herdam objetivos e escopos de runs anteriores (como execução de 
 1. Preencher o campo `"parent_run"` no `state.json` com o ID da run originária (ex: `"parent_run": "run-001"`).
 2. Copiar os campos `"interview_decisions"`, `"prevention_guardrails"` e `"loaded_skills"` da run pai para a run filha como dados iniciais.
 3. Omitir a Fase 0 (Entrevista) se as decisões não mudaram, iniciando diretamente na Fase `1_planner` ou `2_architect` para tratar as tarefas adicionais.
+
+### 1.6 Expansão de Escopo por Inferência de Domínio
+Quando o objetivo de uma run descrever um tipo de sistema reconhecível (ex: sistemas de gestão, plataformas, aplicativos produtividade, ferramentas colaborativas, marketplaces ou qualquer sistema cujo modelo de dados seja implicitamente rico no contexto do domínio descrito), a Fase 0 DEVE executar um processo de **Domain Scope Expansion** antes de encerrar a entrevista:
+1. **Inferir** as entidades, funcionalidades e relacionamentos que tipicamente compõem esse tipo de sistema e que o usuário pode não ter mencionado explicitamente (sub-items, metadados, estados, histórico, permissões, etc.).
+2. **Apresentar** ao usuário essa lista inferida de forma objetiva, perguntando quais estão IN SCOPE para esta run.
+3. **Registrar** o resultado expandido na tabela de escopo binária do `goal.md` e no campo `"scope"` do `state.json`.
+4. **Identificar** se o escopo aprovado contém interações em múltiplos níveis hierárquicos (ex: elementos interativos dentro de outros elementos interativos), e se sim, registrar em `interview_decisions.complex_interactions` a lista desses pares de nível para ativação dos guardrails correspondentes nas fases subsequentes.
+
+Este processo previne que funcionalidades implícitas sejam omitidas do contrato inicial e obriga que as fases de planejamento, arquitetura e build tratem desde o início os aspectos de isolamento e isolação necessários.
 
 ---
 
@@ -95,7 +108,27 @@ Todo o ciclo de trabalho de uma run é armazenado em `runs/run-XXX/`:
 - `generated/`: Código-fonte, testes e scaffolds produzidos pelo Builder.
 - `logs/`: Logs de auditoria das ferramentas.
 
+**Inicialização Obrigatória do Diretório de Logs:** Ao criar qualquer nova run, o agente DEVE criar a seguinte estrutura **antes de iniciar a Fase 0**:
+- `runs/run-XXX/logs/` ← diretório obrigatório
+- `runs/run-XXX/logs/.keep` ← arquivo vazio para garantir rastreabilidade no controle de versão
+
+**Registro de Transições:** A cada transição de fase, o agente DEVE gravar o arquivo `runs/run-XXX/logs/transition_<fase_origem>_to_<fase_destino>.log` contendo:
+```
+timestamp: <ISO 8601>
+from_phase: <fase_origem>
+to_phase:   <fase_destino>
+artifacts_checked:
+  - <caminho do artefato 1> → PRESENTE / AUSENTE
+  - <caminho do artefato 2> → PRESENTE / AUSENTE
+contracts_checked:
+  - <identificador/nome do contrato do componente> → PASSOU | FALHOU
+consistency_check: PASSOU | BLOQUEADO
+blocker_reason: <motivo detalhado file-by-file e checklist de contratos caso bloqueado>
+```
+Logs ausentes em uma run DEVEM ser tratados como evidência de violação do Consistency Check pelo comando `validar-run`.
+
 ---
+
 
 ## 4. Contrato do `state.json`
 O arquivo JSON deve seguir este formato:
@@ -130,7 +163,9 @@ O arquivo JSON deve seguir este formato:
     "max_lines_per_file": null,
     "primary_language": null,
     "typography_strategy": null,
-    "keyboard_shortcuts": null
+    "keyboard_shortcuts": null,
+    "environment_decision": null,
+    "complex_interactions": null
   },
   "artifacts": {
     "goal": "input/goal.md",

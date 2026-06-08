@@ -112,3 +112,32 @@ grep_search -Query "import React from" -SearchPath "<run_generated_path>"
 - **Check Recomendado:**
   - Buscar imports não utilizados com análise do build output (módulos transformados vs módulos declarados).
 
+---
+
+## 6. Interações Compostas (Múltiplos Níveis Hierárquicos)
+
+Esta seção é ativada quando `"complex_interactions"` estiver preenchido em `interview_decisions`. Os checks abaixo devem ser executados usando os contratos declarados na seção `# Technical Contracts Checklist` do `architecture.md` como referência de verdade, adaptando os comandos ao stack e linguagem do projeto.
+
+### 6.1 Verificação de Pontos de Ativação
+
+- **Check Obrigatório:** Para cada nível de interação contratado, verificar que o ponto de ativação da interação (ex: o elemento que inicia um gesto, clique ou foco) está implementado exclusivamente no elemento especificado no contrato — sem escapar para containers pai ou filhos não-intencionados.
+
+*Abordagem de Validação:*
+```
+grep_search pelo identificador do ponto de ativação (ex: atributo, event handler, classe)
+em todos os arquivos de componente, verificando que aparece apenas nos elementos corretos.
+```
+
+### 6.2 Verificação de Mecanismos de Isolamento
+
+- **Check Obrigatório:** Para cada par de níveis interativos, verificar que o mecanismo de isolamento especificado no contrato está presente e ativo no código — impedindo que a interação de um nível propague ou ative handlers de outro nível.
+
+*Critério de PASS:* O mecanismo de isolamento (ex: bloqueio de propagação, condição de guarda, verificação de metadado) está presente e é chamado antes de qualquer processamento de evento no nível filho.
+
+### 6.3 Verificação de Identificação de Tipo
+
+- **Check Obrigatório:** Para cada handler de resposta a interações, verificar que existe verificação do tipo ou origem do evento antes de processá-lo — garantindo que o handler do nível correto processa apenas eventos que lhe pertencem.
+
+*Critério de PASS:* Toda função de resposta a interação verifica a origem ou tipo do evento como primeira condição, antes de executar lógica de negócio.
+
+*Nota: Os comandos exatos de grep ou inspeção dependem do stack tecnológico. O Validator deve derivá-los dos contratos do `architecture.md` e adaptar ao padrão do projeto (ex: atributos HTML5 para DnD nativo, event.target para eventos de DOM, tipos de dados para mensagens em sistemas de comunicação).*

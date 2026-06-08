@@ -13,6 +13,7 @@
     "protocol_version",
     "created_at",
     "updated_at",
+    "environment_ready",
     "interview_decisions",
     "artifacts",
     "prevention_guardrails",
@@ -73,6 +74,10 @@
       "pattern": "^(run-\\d{3,4})?$",
       "description": "ID da run pai da qual esta run herda decisões (se aplicável)"
     },
+    "environment_ready": {
+      "type": ["boolean", "null"],
+      "description": "Indica se as ferramentas de linha de comando necessárias estão disponíveis no ambiente"
+    },
     "phase_history": {
       "type": "array",
       "description": "Histórico de transições e rollback de fases",
@@ -91,6 +96,18 @@
           "timestamp": {
             "type": "string",
             "format": "date-time"
+          },
+          "rollback_changes": {
+            "type": "array",
+            "description": "Lista de arquivos modificados e motivos do rollback nesta iteração",
+            "items": {
+              "type": "object",
+              "required": ["file", "reason"],
+              "properties": {
+                "file": { "type": "string" },
+                "reason": { "type": "string" }
+              }
+            }
           }
         }
       }
@@ -109,7 +126,8 @@
         "max_lines_per_file",
         "primary_language",
         "typography_strategy",
-        "keyboard_shortcuts"
+        "keyboard_shortcuts",
+        "environment_decision"
       ],
       "properties": {
         "language_runtime": {
@@ -167,6 +185,17 @@
         },
         "keyboard_shortcuts": {
           "type": ["string", "array", "null"]
+        },
+        "environment_decision": {
+          "type": ["string", "null"],
+          "description": "Decisão do usuário em caso de ferramentas de ambiente ausentes (ex: 'proceed_without_runtime')"
+        },
+        "complex_interactions": {
+          "type": ["array", "null"],
+          "description": "Lista de pares de níveis de interação hierárquica identificados na Fase 0 (ex: ['card-dentro-de-coluna', 'widget-dentro-de-painel']). Quando preenchido, ativa guardrails de isolamento de evento nas Fases 1 a 6.",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": true

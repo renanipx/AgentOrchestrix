@@ -15,6 +15,7 @@
   # Storage Strategy (Limites e Estratégia de Persistência)
   # Performance Strategy (Memoização, Dependency Arrays, Lazy Loading)
   # Shared Utilities (Catálogo de Funções Utilitárias Compartilhadas)
+  # Technical Contracts Checklist (Checklist de Contratos Técnicos por Componente)
   # Implementation Plan (Passo a passo da construção)
   ```
 - **`runs/run-XXX/artifacts/planning_summary.md`** (obrigatório se o comando for `planejar:`): Documento consolidado contendo links e resumos para os artefatos `goal.md` (em `runs/run-XXX/input/goal.md`), `task.md` e `architecture.md`.

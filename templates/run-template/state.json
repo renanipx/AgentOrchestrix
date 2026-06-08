@@ -10,6 +10,7 @@
   "updated_at": "2026-06-06T18:00:00Z",
   "parent_run": null,
   "phase_history": [],
+  "environment_ready": null,
   "interview_decisions": {
     "language_runtime": null,
     "technology_stack": {
@@ -28,7 +29,8 @@
     "max_lines_per_file": null,
     "primary_language": null,
     "typography_strategy": null,
-    "keyboard_shortcuts": null
+    "keyboard_shortcuts": null,
+    "environment_decision": null
   },
   "artifacts": {
     "goal": "input/goal.md",

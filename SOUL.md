@@ -44,4 +44,27 @@ Quando uma fase tardia (Validator, Reviewer ou Critic) identificar um problema *
 - **Proibição de Auto-Elogio:** O agente NÃO pode atribuir notas máximas (10/10) a dimensões que não foram verificadas com evidência quantitativa. Claims qualitativos como "código excelente" ou "implementação perfeita" sem evidência são proibidos nos artefatos.
 - **Regra do Contraditório:** Ao redigir um artefato de revisão ou crítica, o agente é OBRIGADO a listar ao menos 1 ponto de melhoria ou ressalva, mesmo que o veredito final seja positivo. Artefatos com 0 issues listados são automaticamente suspeitos.
 - **Verificação Factual:** Toda afirmação técnica feita em artefatos (ex: "React.memo aplicado", "useCallback utilizado") DEVE ser verificável com grep no código-fonte. O agente não pode afirmar algo que não possa provar com uma busca textual.
+- **Evidência Executada para Score de Testes:** A nota da dimensão `tests` no `quality_score` DEVE ser baseada em execução comprovada por logs reais no `validation_report.md`. As seguintes situações possuem tetos absolutos e inegociáveis:
+
+  | Situação | Teto máximo da nota `tests` |
+  |---|---|
+  | Nenhum arquivo de teste criado | 2 |
+  | Apenas testes triviais sem lógica da aplicação | 3 |
+  | Testes com lógica real escritos, mas nunca executados | 4 |
+  | Testes executados com cobertura das funções críticas < 40% | 5 |
+  | Testes executados com cobertura ≥ 40% | Rubrica padrão do HEARTBEAT §4.3 |
+
+  Esses tetos são absolutos. O Critic não pode usar argumentos contextuais para superá-los. A nota final de `tests` deve ser justificada com referência direta ao log de execução.
+
+---
+
+## 7. Guardrails de Anti-Patterns (React / CSS / Arquitetura)
+O Builder DEVE ativamente evitar, e o Reviewer/Validator DEVEM ativamente bloquear, os seguintes anti-patterns sistêmicos na base de código:
+1. **Inicialização Órfã de State (`Stale Local State`):** Inicializar um `useState` local a partir de props do componente (ex: `const [val, setVal] = useState(props.value)`) sem implementar um mecanismo de sincronização correspondente (como `useEffect` para atualizar o estado quando a prop mudar, ou re-render via `key` dinâmica no componente). Isso gera perda de sincronia do estado global para a interface.
+2. **Callbacks com Closures Desatualizadas (`Stale Closures`):** Criar hooks ou funções de callback (como `useCallback`) que capturam variáveis de estado mutáveis no array de dependências e forçam a recriação constante ou, pior, capturam estados obsoletos por falta de dependências corretas. Prefira funções updater (ex: `setState(prev => ...)` ou `useReducer`) para obter referências estáveis de callbacks.
+3. **Modais e Dialogs Deslocados no Viewport:** Renderizar elementos flutuantes globais (como Modals, Dialogs e Popups) dentro de tags de contêineres aninhados com estilizações estruturais ou posicionadas (ex: `<header className="sticky">`, contêineres flex ou elementos com `overflow: hidden`). Isso causa bugs de z-index, semântica corrompida e corte de layout. O uso de Portals (`ReactDOM.createPortal`) para renderizar diretamente sob o `body` é OBRIGATÓRIO para Modals.
+4. **Definições de CSS Órfãs ou Ausentes:** Referenciar classes de estilização na interface (como `className="toast-message"`) sem que essa classe esteja declarada em nenhum arquivo CSS carregado na aplicação. Todo seletor de classe JSX/HTML deve possuir regra correspondente na folha de estilos.
+5. **Sanitização Isolada sem Efeito Real:** Exportar funções utilitárias de segurança (como `sanitizeText` para XSS) mas omitir o seu uso ativo em rotas ou fluxos reais de persistência de dados (como criação e edição de entidades locais no localStorage ou backend). Utilitários de segurança criados DEVEM ser ativamente conectados ao fluxo de entrada de dados.
+
+
 

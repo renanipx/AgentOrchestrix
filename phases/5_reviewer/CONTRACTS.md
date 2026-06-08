@@ -13,6 +13,8 @@
   # Verdict (Aprovado / Reprovado / Precisa de Ajustes)
   # Requirements Coverage (Quão bem os requisitos foram atendidos)
   # Architecture Alignment (Alinhamento com o plano de arquitetura)
+  # Technical Contracts Status (Status detalhado PASSOU/FALHOU de cada contrato técnico)
+  # Risk Mitigation Audit (Auditoria de mitigação dos riscos mapeados no planejamento)
   # Syntax And Test Check (Resultado da análise estática e execução de testes)
   # UX Compliance (Conformidade de UX: formulários, empty states, feedback de erro)
   # Performance Review (Memoização, lógica duplicada, dependency arrays)
