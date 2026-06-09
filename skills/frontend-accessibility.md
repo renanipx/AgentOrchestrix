@@ -1,33 +1,33 @@
-# Frontend Accessibility — Acessibilidade, Contraste e Interação Touch
+# Frontend Accessibility — Accessibility, Contrast, and Touch Interaction
 
-Esta sub-skill regula as diretrizes de acessibilidade (WCAG), contraste, navegação por teclado, e suporte completo a telas touch e animações de interface.
-
----
-
-## 1. Padrões de Acessibilidade e Contraste
-
-1. **Relação de Contraste (WCAG AA):** Qualquer texto ou elemento crítico de interface deve possuir taxa de contraste mínima de 4.5:1 (ou 3:1 para textos grandes). Evite cores escuras sobrepostas a fundos escuros.
-2. **Navegação por Teclado:**
-   * Todos os elementos interativos (botões, links, inputs, abas) devem ser alcançáveis via tecla `Tab`.
-   * Indique visualmente o foco de forma nítida (ex: contorno/outline customizado, nunca remova `:focus { outline: none }` sem fornecer um substituto claro).
-   * Atalhos de teclado (ex: `Escape` para fechar modais, setas para navegar em listas) devem ser documentados e funcionais.
-3. **Semântica HTML5:** Use tags semânticas apropriadas (`<button>`, `<nav>`, `<main>`, `<article>`, `<header>`, `<dialog>`) para garantir o funcionamento correto de leitores de tela e utilitários de acessibilidade.
+This sub-skill regulates accessibility guidelines (WCAG), contrast, keyboard navigation, and full support for touchscreens and UI animations.
 
 ---
 
-## 2. Controles Contextuais (Touch vs Hover)
+## 1. Accessibility and Contrast Standards
 
-1. **Área Mínima de Clique:** Botões e áreas acionáveis devem possuir uma área mínima de clique de **44x44px** em dispositivos móveis/telas touch para evitar erros de toque do usuário.
+1. **Contrast Ratio (WCAG AA):** Any text or critical interface element must have a minimum contrast ratio of 4.5:1 (or 3:1 for large text). Avoid dark colors overlapping dark backgrounds.
+2. **Keyboard Navigation:**
+   * All interactive elements (buttons, links, inputs, tabs) must be reachable via the `Tab` key.
+   * Visually indicate focus clearly (e.g., custom outline/border, never remove `:focus { outline: none }` without providing a clear substitute).
+   * Keyboard shortcuts (e.g., `Escape` to close modals, arrow keys to navigate lists) must be documented and functional.
+3. **HTML5 Semantics:** Use appropriate semantic tags (`<button>`, `<nav>`, `<main>`, `<article>`, `<header>`, `<dialog>`) to ensure proper functioning of screen readers and accessibility tools.
+
+---
+
+## 2. Contextual Controls (Touch vs Hover)
+
+1. **Minimum Tap Target Size:** Buttons and actionable areas must have a minimum click/tap target size of **44x44px** on mobile devices/touchscreens to prevent user touch errors.
 2. **Hover vs Touch:**
-   * Elementos contextuais (como botões de exclusão ou edição rápidos) que ficam ocultos por padrão e só aparecem ao passar o mouse (`hover`) em desktops **devem ficar permanentemente visíveis em telas touch**.
-   * Use a media query `@media (hover: none)` no CSS para desativar a ocultação desses elementos e torná-los estáticos para usuários móveis.
+   * Contextual elements (such as quick delete or edit buttons) that are hidden by default and only appear on hover (`hover`) on desktops **must remain permanently visible on touchscreens**.
+   * Use the `@media (hover: none)` media query in CSS to disable the hiding of these elements and make them static for mobile users.
 
 ---
 
-## 3. Animações e Movimentos de Interface
+## 3. Animations and Interface Movements
 
-1. **Transições Suaves:** Qualquer interação de estado (hover, clique, expansão) deve possuir transições sutis (ex: `transition: all 0.2s ease-in-out`) para evitar saltos visuais secos.
-2. **Entradas e Saídas Completas:**
-   * Qualquer elemento renderizado com animação de entrada (ex: modal surgindo com fade-in e scale-up) **DEVE possuir uma animação de saída correspondente** (fade-out e scale-down) ao ser fechado ou desmontado.
-   * Elementos desaparecendo abruptamente do DOM sem transição de saída são considerados defeitos visuais.
-3. **Preferência por Redução de Movimento:** Respeite a preferência do sistema operacional do usuário por movimentos reduzidos usando a media query `@media (prefers-reduced-motion: reduce)` para desativar animações pesadas.
+1. **Smooth Transitions:** Any state interaction (hover, click, expansion) must have subtle transitions (e.g., `transition: all 0.2s ease-in-out`) to avoid abrupt visual jumps.
+2. **Complete Entrances and Exits:**
+   * Any element rendered with an entrance animation (e.g., a modal appearing with a fade-in and scale-up) **MUST have a corresponding exit animation** (fade-out and scale-down) when closed or unmounted.
+   * Elements disappearing abruptly from the DOM without an exit transition are considered visual defects.
+3. **Prefers Reduced Motion:** Respect the user's OS preference for reduced motion by using the `@media (prefers-reduced-motion: reduce)` media query to disable heavy animations.

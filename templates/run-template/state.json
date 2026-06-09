@@ -1,7 +1,7 @@
 {
   "run_id": "run-XXX",
-  "command": "orquestrar",
-  "goal": "Descrição do objetivo principal",
+  "command": "orchestrate",
+  "goal": "Description of the main goal",
   "status": "created",
   "current_phase": "0_interview",
   "completed_phases": [],

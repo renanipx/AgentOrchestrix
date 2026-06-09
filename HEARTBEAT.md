@@ -1,18 +1,18 @@
-# HEARTBEAT — Loop de Execução e Consistência
+# HEARTBEAT — Execution Loop and Consistency
 
-Este arquivo define como a IDE deve ciclar pelas fases, atualizar o estado e gerenciar o histórico de execução.
+This file defines how the IDE must cycle through phases, update the state, and manage execution history.
 
-## 1. Loop de Execução (Transições)
-O ciclo de vida do AgentOrchestrix consiste em 7 fases ordenadas:
-`0_interview` -> `1_planner` -> `2_architect` -> `3_builder` -> `4_validator` -> `5_reviewer` -> `6_critic` -> `completed` (ou `waiting_for_user`).
+## 1. Execution Loop (Transitions)
+The lifecycle of AgentOrchestrix consists of 7 ordered phases:
+`0_interview` -> `1_planner` -> `2_architect` -> `3_builder` -> `4_validator` -> `5_reviewer` -> `6_critic` -> `completed` (or `waiting_for_user`).
 
-A IDE deve ler e escrever o arquivo `runs/run-XXX/state.json` para persistir o progresso. A cada mudança de estado:
-1. Conclua os entregáveis exigidos pelo contrato da fase atual.
-2. Realize a **Auditoria de Consistência** (ver seção 2).
-3. Modifique o campo `"current_phase"` para a próxima fase.
-4. Adicione a fase anterior na lista `"completed_phases"`.
-5. Atualize o campo `"updated_at"` com o timestamp ISO 8601 correspondente.
-6. Registre o histórico de transições no array `"phase_history"`.
+The IDE must read and write the `runs/run-XXX/state.json` file to persist progress. At each state change:
+1. Complete the deliverables required by the contract of the current phase.
+2. Perform the **Consistency Audit** (see Section 2).
+3. Modify the `"current_phase"` field to the next phase.
+4. Add the previous phase to the `"completed_phases"` list.
+5. Update the `"updated_at"` field with the corresponding ISO 8601 timestamp.
+6. Record the transition history in the `"phase_history"` array.
 
 ```mermaid
 flowchart TD
@@ -22,160 +22,159 @@ flowchart TD
     F3 --> F4["4_validator"]
     F4 --> F5["5_reviewer"]
     F5 --> F6["6_critic"]
-    F6 -->|Sem riscos altos| DONE["completed"]
-    F6 -->|Risco ALTO| WAIT["waiting_for_user"]
-    WAIT -->|Refatorar| F2
-    WAIT -->|Concluir| DONE
-    F4 -->|Falha (Rollback)| F3
-    F5 -->|Falha de Arquitetura (Rollback)| F2
-    F5 -->|Falha de Código (Rollback)| F3
+    F6 -->|No high risks| DONE["completed"]
+    F6 -->|HIGH risk| WAIT["waiting_for_user"]
+    WAIT -->|Refactor| F2
+    WAIT -->|Complete| DONE
+    F4 -->|Failure (Rollback)| F3
+    F5 -->|Architecture Failure (Rollback)| F2
+    F5 -->|Code Failure (Rollback)| F3
 ```
 
-### 1.1 Fluxo de Retorno de Crítica (Fase 6)
-Se a fase atual for a `6_critic` e o Critic identificar um risco com severidade **Alta** ou preocupações de manutenção complexas (como limites estritos de arquivos, acoplamento, armazenamento), a run DEVE assumir o status de `waiting_for_user`. O usuário terá a opção de:
-1. Concluir a run (assumir estado `completed`).
-2. Retornar a run para a Fase `2_architect` ou `3_builder` com uma "Tarefa de Refatoração baseada no Critic", permitindo um ciclo de polimento estrutural antes da entrega final.
+### 1.1 Critic Feedback Flow (Phase 6)
+If the current phase is `6_critic` and the Critic identifies a risk with **High** severity or complex maintenance concerns (such as strict file limits, coupling, storage), the run MUST assume the status of `waiting_for_user`. The user will have the option to:
+1. Complete the run (assume the `completed` state).
+2. Return the run to Phase `2_architect` or `3_builder` with a "Refactoring Task based on Critic", allowing a structural polishing cycle before final delivery.
 
-### 1.2 Protocolo de Auto-Validação de Transição
-Antes de modificar o campo `"current_phase"` no `state.json`, o agente DEVE imprimir no chat um bloco markdown contendo a seguinte lista de verificação preenchida:
+### 1.2 Transition Auto-Validation Protocol
+Before modifying the `"current_phase"` field in `state.json`, the agent MUST print a markdown block in the chat containing the following filled checklist:
 
-#### 1.2.1 Comportamento da Transição no Modo Autônomo (auto_mode)
-Se a propriedade `"auto_mode"` no `state.json` for `true`, o agente realiza o mesmo Protocolo de Auto-Validação, porém a transição é direta:
-1. Imprime a auto-auditoria no chat apenas para fins de logging e auditoria.
-2. Atualiza e salva o `state.json` com `"current_phase": "<Próxima_Fase>"` no disco.
-3. Carrega imediatamente o `RULES.md` e `CONTRACTS.md` da nova fase na mesma thread de execução.
-4. Prossegue com a execução da nova fase de forma contínua, sem interromper ou aguardar nova instrução/mensagem do usuário no chat (geralmente sob modo `/goal`).
+#### 1.2.1 Transition Behavior in Autonomous Mode (auto_mode)
+If the `"auto_mode"` property in `state.json` is `true`, the agent performs the same Auto-Validation Protocol, but the transition is direct:
+1. Prints the auto-audit in the chat for logging and auditing purposes only.
+2. Updates and saves the `state.json` with `"current_phase": "<Next_Phase>"` to disk.
+3. Immediately loads the `RULES.md` and `CONTRACTS.md` of the new phase in the same execution thread.
+4. Proceeds with the execution of the new phase continuously, without interrupting or waiting for new instructions/messages from the user in the chat (usually under `/goal` mode).
 
 ```markdown
-### 🔍 Auto-Auditoria de Transição: [Fase_Atual] -> [Próxima_Fase]
-- [ ] Todos os artefatos de saída exigidos pelo CONTRACTS.md foram gerados e salvos? (Listar caminhos físicos)
-- [ ] O arquivo state.json foi validado contra o JSON Schema em `schemas/state.schema.json` e está 100% em conformidade?
-- [ ] Fiz uma leitura completa do state.json final para garantir sintaxe JSON válida (sem vírgulas sobressalentes, aspas fechadas)?
-- [ ] O array "completed_phases" foi atualizado com a fase que estou encerrando?
-- [ ] O campo "updated_at" foi preenchido com o timestamp atual?
-- [ ] O critic.md contém algum risco classificado como [ALTO]?
-      Se SIM → status DEVE ser "waiting_for_user". Transição para "completed" bloqueada.
-      Se NÃO → status "completed" é permitido.
+### 🔍 Transition Auto-Audit: [Current_Phase] -> [Next_Phase]
+- [ ] Have all output artifacts required by CONTRACTS.md been generated and saved? (List physical paths)
+- [ ] Has the state.json file been validated against the JSON Schema in `schemas/state.schema.json` and is it 100% compliant?
+- [ ] Have I performed a complete read of the final state.json to ensure valid JSON syntax (no trailing commas, closed quotes)?
+- [ ] Has the "completed_phases" array been updated with the phase I am closing?
+- [ ] Was the "updated_at" field filled with the current timestamp?
+- [ ] Does critic.md contain any risk classified as [HIGH]?
+      If YES → status MUST be "waiting_for_user". Transition to "completed" blocked.
+      If NO → "completed" status is permitted.
 ```
-*Nota: Se qualquer check for falso, a transição está bloqueada e o agente deve corrigir o problema antes de salvar o `state.json`.*
+*Note: If any check is false, the transition is blocked and the agent must correct the issue before saving `state.json`.*
 
 
-### 1.3 Mecanismo de Recovery/Rollback entre Fases
-Se uma fase tardia de validação ou verificação falhar, a execução pode entrar em estado de `blocked` ou `failed`. Para recuperar e prosseguir, o agente deve efetuar o **rollback** de estado.
-A tabela de mapeamento de rollback oficial é:
+### 1.3 Recovery/Rollback Mechanism between Phases
+If a late validation or verification phase fails, execution may enter a `blocked` or `failed` state. To recover and proceed, the agent must perform a state **rollback**.
+The official rollback mapping table is:
 
-| Fase de Origem da Falha | Causa do Bloqueio | Fase de Destino do Rollback | Ação Necessária |
-|-------------------------|-------------------|-----------------------------|-----------------|
-| `4_validator`           | Erro de teste, estilo ou lint | `3_builder` | Builder corrige o código para sanar a falha reportada |
-| `5_reviewer`            | Violação de clean code ou lógica duplicada | `3_builder` | Builder refatora o código para simplificação |
-| `5_reviewer`            | Desvio grave de estrutura de pastas ou interfaces | `2_architect` | Architect revisa o design e re-alinha com o Builder |
-| `6_critic`              | Risco ALTO de segurança, performance ou manutenção | `2_architect` ou `3_builder` | Ajustar a arquitetura ou implementar mitigação |
+| Failure Origin Phase | Cause of Blockage | Rollback Destination Phase | Required Action |
+|----------------------|-------------------|----------------------------|-----------------|
+| `4_validator`        | Test, style, or lint error | `3_builder` | Builder corrects the code to resolve the reported failure |
+| `5_reviewer`         | Clean code violation or duplicated logic | `3_builder` | Builder refactors the code for simplification |
+| `5_reviewer`         | Severe folder structure or interface mismatch | `2_architect` | Architect reviews the design and re-aligns with the Builder |
+| `6_critic`           | HIGH security, performance, or maintenance risk | `2_architect` or `3_builder` | Adjust the architecture or implement mitigation |
 
-#### Protocolo de Transição em Rollback:
-1. Atualizar `"status"` para `"running"`.
-2. Definir `"current_phase"` para a fase de destino de rollback.
-3. Remover as fases posteriores à fase de destino de rollback do array `"completed_phases"`.
-4. Registrar o evento em `"phase_history"` com `"status": "running"`, o timestamp correspondente, e preencher o array opcional `"rollback_changes"` detalhando cada arquivo que necessita de correção/modificação e o respectivo motivo (ex: `[{"file": "src/components/Card.jsx", "reason": "Falta de sincronização do estado local com props"}]`).
+#### Rollback Transition Protocol:
+1. Update `"status"` to `"running"`.
+2. Set `"current_phase"` to the rollback destination phase.
+3. Remove phases after the rollback destination phase from the `"completed_phases"` array.
+4. Record the event in `"phase_history"` with `"status": "running"`, the corresponding timestamp, and fill the optional `"rollback_changes"` array detailing each file that requires correction/modification and the respective reason (e.g., `[{"file": "src/components/Card.jsx", "reason": "Lack of sync between local state and props"}]`).
 
-### 1.4 Validação de Duplicata de Runs
-Antes de criar uma nova run, o agente DEVE verificar se o diretório `runs/run-XXX/` desejado já existe.
-- A listagem de diretórios deve ser consultada para determinar os IDs de run já ocupados.
-- IDs de runs ativas ou arquivadas nunca devem ser sobrepostos ou reutilizados. O agente deve criar incrementalmente a próxima run disponível (ex: `run-002` se `run-001` já existir).
+### 1.4 Run Duplication Validation
+Before creating a new run, the agent MUST check if the desired `runs/run-XXX/` directory already exists.
+- The directory listing must be consulted to determine already occupied run IDs.
+- Active or archived run IDs must never be overwritten or reused. The agent must incrementally create the next available run (e.g., `run-002` if `run-001` already exists).
 
-### 1.5 Mecanismo de Herança entre Runs
-Para runs que herdam objetivos e escopos de runs anteriores (como execução de Actionable Backlogs do Critic), o agente DEVE:
-1. Preencher o campo `"parent_run"` no `state.json` com o ID da run originária (ex: `"parent_run": "run-001"`).
-2. Copiar os campos `"interview_decisions"`, `"prevention_guardrails"` e `"loaded_skills"` da run pai para a run filha como dados iniciais.
-3. Omitir a Fase 0 (Entrevista) se as decisões não mudaram, iniciando diretamente na Fase `1_planner` ou `2_architect` para tratar as tarefas adicionais.
+### 1.5 Inheritance Mechanism between Runs
+For runs that inherit goals and scopes from previous runs (such as executing Actionable Backlogs from the Critic), the agent MUST:
+1. Fill the `"parent_run"` field in `state.json` with the parent run ID (e.g., `"parent_run": "run-001"`).
+2. Copy the `"interview_decisions"`, `"prevention_guardrails"`, and `"loaded_skills"` fields from the parent run to the child run as initial data.
+3. Omit Phase 0 (Interview) if decisions have not changed, starting directly at Phase `1_planner` or `2_architect` to handle the additional tasks.
 
-### 1.6 Expansão de Escopo por Inferência de Domínio
-Quando o objetivo de uma run descrever um tipo de sistema reconhecível (ex: sistemas de gestão, plataformas, aplicativos produtividade, ferramentas colaborativas, marketplaces ou qualquer sistema cujo modelo de dados seja implicitamente rico no contexto do domínio descrito), a Fase 0 DEVE executar um processo de **Domain Scope Expansion** antes de encerrar a entrevista:
-1. **Inferir** as entidades, funcionalidades e relacionamentos que tipicamente compõem esse tipo de sistema e que o usuário pode não ter mencionado explicitamente (sub-items, metadados, estados, histórico, permissões, etc.).
-2. **Apresentar** ao usuário essa lista inferida de forma objetiva, perguntando quais estão IN SCOPE para esta run.
-3. **Registrar** o resultado expandido na tabela de escopo binária do `goal.md` e no campo `"scope"` do `state.json`.
-4. **Identificar** se o escopo aprovado contém interações em múltiplos níveis hierárquicos (ex: elementos interativos dentro de outros elementos interativos), e se sim, registrar em `interview_decisions.complex_interactions` a lista desses pares de nível para ativação dos guardrails correspondentes nas fases subsequentes.
+### 1.6 Scope Expansion by Domain Inference
+When a run's goal describes a recognizable type of system (e.g., management systems, platforms, productivity apps, collaborative tools, marketplaces, or any system whose data model is implicitly rich in the context of the described domain), Phase 0 MUST execute a **Domain Scope Expansion** process before closing the interview:
+1. **Infer** the entities, functionalities, and relationships that typically compose this type of system and that the user may not have explicitly mentioned (sub-items, metadata, states, history, permissions, etc.).
+2. **Present** this inferred list to the user objectively, asking which ones are IN SCOPE for this run.
+3. **Record** the expanded result in the binary scope table of `goal.md` and in the `"scope"` field of `state.json`.
+4. **Identify** if the approved scope contains interactions at multiple hierarchical levels (e.g., interactive elements inside other interactive elements), and if so, record in `interview_decisions.complex_interactions` the list of these level pairs to activate corresponding guardrails in subsequent phases.
 
-Este processo previne que funcionalidades implícitas sejam omitidas do contrato inicial e obriga que as fases de planejamento, arquitetura e build tratem desde o início os aspectos de isolamento e isolação necessários.
+This process prevents implicit features from being omitted from the initial contract and forces the planning, architecture, and build phases to address the necessary isolation and separation aspects from the beginning.
 
-### 1.7 Âncoras de Memória (Memory Anchors)
-Para evitar que o Reviewer (Fase 5) e o Critic (Fase 6) leiam múltiplos arquivos markdown extensos (como `goal.md`, `task.md` ou `architecture.md`), o agente deve preencher e atualizar a propriedade `"phase_summaries"` no `state.json` ao finalizar cada fase.
-- Cada resumo deve possuir no máximo 2 linhas.
-- O resumo deve consolidar apenas as decisões críticas e os resultados da fase.
-- Nas fases subsequentes, os agentes devem priorizar a leitura de `"phase_summaries"` em vez de re-ler os arquivos físicos de documentação das fases anteriores.
+### 1.7 Memory Anchors
+To prevent the Reviewer (Phase 5) and Critic (Phase 6) from reading multiple large markdown files (such as `goal.md`, `task.md`, or `architecture.md`), the agent must populate and update the `"phase_summaries"` property in `state.json` upon completing each phase.
+- Each summary must be a maximum of 2 lines.
+- The summary should consolidate only critical decisions and phase results.
+- In subsequent phases, agents should prioritize reading `"phase_summaries"` instead of re-reading physical documentation files from previous phases.
 
-### 1.8 Transições de Conversa (Handoffs Multi-Chat)
-Para mitigar os efeitos de congestionamento de tokens e vazamento de papéis (Role Leakage) durante a execução contínua, o protocolo AgentOrchestrix implementa transições de conversa controladas por arquivos de handoff.
-- **Handoff Recomendado:** Ao final da **Fase 2 (Architect)**, antes de iniciar o build na Fase 3.
-- **Handoff Obrigatório:** Ao final da **Fase 3 (Builder)**, antes do Validator na Fase 4.
+### 1.8 Conversation Transitions (Multi-Chat Handoffs)
+To mitigate the effects of token congestion and role leakage during continuous execution, the AgentOrchestrix protocol implements conversation transitions controlled by handoff files.
+- **Recommended Handoff:** At the end of **Phase 2 (Architect)**, before starting the build in Phase 3.
+- **Mandatory Handoff:** At the end of **Phase 3 (Builder)**, before the Validator in Phase 4.
 
-#### 1.8.1 Geração do Handoff:
-Quando uma transição de handoff for ativada (seja recomendada ou obrigatória):
-1. O agente em encerramento DEVE criar o arquivo `runs/run-XXX/artifacts/handoff.md` e preencher o campo `"handoff"` sob `"artifacts"` no `state.json`.
-2. O arquivo `handoff.md` deve conter a seguinte estrutura básica:
-   - **Date:** Timestamp ISO 8601 da criação do handoff.
-   - **Fase de Origem:** A fase que está sendo encerrada (ex: `2_architect` ou `3_builder`).
-   - **Resumo do Progresso:** Um resumo curto e focado do que foi concluído na run até este ponto.
-   - **Estrutura de Arquivos Críticos:** Caminhos relativos de arquivos de arquitetura ou códigos relevantes.
-   - **Próximos Passos e Ações Pendentes:** O que a próxima fase deve executar assim que a run for retomada.
-3. O status da run é alterado para `"waiting_for_user"` no `state.json`.
-4. O agente finaliza a resposta pedindo ao usuário para abrir um novo chat limpo na IDE e enviar o comando `continuar-run: runs/run-XXX`.
+#### 1.8.1 Handoff Generation:
+When a handoff transition is activated (whether recommended or mandatory):
+1. The departing agent MUST create the `runs/run-XXX/artifacts/handoff.md` file and fill the `"handoff"` field under `"artifacts"` in `state.json`.
+2. The `handoff.md` file must contain the following basic structure:
+   - **Date:** ISO 8601 timestamp of handoff creation.
+   - **Origin Phase:** The phase being closed (e.g., `2_architect` or `3_builder`).
+   - **Progress Summary:** A short, focused summary of what was completed in the run up to this point.
+   - **Critical Files Structure:** Relative paths of relevant architecture or code files.
+   - **Next Steps and Pending Actions:** What the next phase must execute as soon as the run is resumed.
+3. The run status is changed to `"waiting_for_user"` in `state.json`.
+4. The agent finalizes the response by asking the user to open a new clean chat in the IDE and send the command `continue-run: runs/run-XXX`.
 
-#### 1.8.2 Recuperação do Handoff:
-Ao receber o comando `continuar-run: runs/run-XXX` em uma nova janela de chat:
-1. O agente carrega o `state.json`.
-2. O agente lê o arquivo `artifacts/handoff.md` para carregar a memória essencial da run.
-3. O agente lê o `RULES.md` e `CONTRACTS.md` da `"current_phase"` correspondente.
-4. O status da run é restaurado para `"running"` com `"auto_mode": true`, e a execução prossegue de forma autônoma a partir da nova fase.
-
----
-
-## 2. Auditoria de Consistência
-Antes de avançar para a próxima fase, a IDE deve obrigatoriamente verificar se todos os arquivos descritos como saída no `CONTRACTS.md` da fase atual foram gerados e não estão vazios.
-- Se algum artefato estiver ausente ou inconsistente, a transição **deve ser abortada**.
-- O status da run em `state.json` deve ser alterado para `"blocked"` ou `"failed"`.
-- Um erro descritivo deve ser inserido no array `"errors"` no `state.json`.
-- O agente deve solicitar intervenção ao usuário antes de tentar prosseguir.
+#### 1.8.2 Handoff Recovery:
+Upon receiving the command `continue-run: runs/run-XXX` in a new chat window:
+1. The agent loads `state.json`.
+2. The agent reads the `artifacts/handoff.md` file to load the run's essential memory.
+3. The agent reads the `RULES.md` and `CONTRACTS.md` of the corresponding `"current_phase"`.
+4. The run status is restored to `"running"` with `"auto_mode": true`, and execution proceeds autonomously from the new phase.
 
 ---
 
-## 3. Estrutura da Run (`runs/`)
-Todo o ciclo de trabalho de uma run é armazenado em `runs/run-XXX/`:
-- `state.json`: Arquivo de controle de estado.
-- `input/`: Diretório para inputs iniciais (ex: `goal.md`).
-- `artifacts/`: Onde ficam os artefatos das fases (`task.md`, `architecture.md`, etc.).
-- `generated/`: Código-fonte, testes e scaffolds produzidos pelo Builder.
-- `logs/`: Logs de auditoria das ferramentas.
+## 2. Consistency Audit
+Before moving to the next phase, the IDE must check whether all files described as outputs in the `CONTRACTS.md` of the current phase have been generated and are not empty.
+- If any artifact is missing or inconsistent, the transition **must be aborted**.
+- The run status in `state.json` must be changed to `"blocked"` or `"failed"`.
+- A descriptive error must be inserted into the `"errors"` array in `state.json`.
+- The agent must request user intervention before attempting to proceed.
 
-**Inicialização Obrigatória do Diretório de Logs:** Ao criar qualquer nova run, o agente DEVE criar a seguinte estrutura **antes de iniciar a Fase 0**:
-- `runs/run-XXX/logs/` ← diretório obrigatório
-- `runs/run-XXX/logs/.keep` ← arquivo vazio para garantir rastreabilidade no controle de versão
+---
 
-**Registro de Transições:** A cada transição de fase, o agente DEVE gravar o arquivo `runs/run-XXX/logs/transition_<fase_origem>_to_<fase_destino>.log` contendo:
+## 3. Run Structure (`runs/`)
+All work cycle data for a run is stored in `runs/run-XXX/`:
+- `state.json`: State control file.
+- `input/`: Directory for initial inputs (e.g., `goal.md`).
+- `artifacts/`: Location of phase artifacts (`task.md`, `architecture.md`, etc.).
+- `generated/`: Source code, tests, and scaffolds produced by the Builder.
+- `logs/`: Tool audit logs.
+
+**Mandatory Logs Directory Initialization:** When creating any new run, the agent MUST create the following structure **before starting Phase 0**:
+- `runs/run-XXX/logs/` ← mandatory directory
+- `runs/run-XXX/logs/.keep` ← empty file to ensure traceability in version control
+
+**Transitions Logging:** At each phase transition, the agent MUST write the file `runs/run-XXX/logs/transition_<origin_phase>_to_<destination_phase>.log` containing:
 ```
 timestamp: <ISO 8601>
-from_phase: <fase_origem>
-to_phase:   <fase_destino>
+from_phase: <origin_phase>
+to_phase:   <destination_phase>
 artifacts_checked:
-  - <caminho do artefato 1> → PRESENTE / AUSENTE
-  - <caminho do artefato 2> → PRESENTE / AUSENTE
+  - <artifact 1 path> → PRESENT / MISSING
+  - <artifact 2 path> → PRESENT / MISSING
 contracts_checked:
-  - <identificador/nome do contrato do componente> → PASSOU | FALHOU
-consistency_check: PASSOU | BLOQUEADO
-blocker_reason: <motivo detalhado file-by-file e checklist de contratos caso bloqueado>
+  - <component contract identifier/name> → PASSED | FAILED
+consistency_check: PASSED | BLOCKED
+blocker_reason: <detailed file-by-file reason and contract checklist if blocked>
 ```
-Logs ausentes em uma run DEVEM ser tratados como evidência de violação do Consistency Check pelo comando `validar-run`.
+Missing logs in a run MUST be treated as evidence of a Consistency Check violation by the `validate-run` command.
 
 ---
 
-
-## 4. Contrato do `state.json`
-O arquivo JSON deve seguir este formato:
+## 4. `state.json` Contract
+The JSON file must follow this format:
 ```json
 {
   "run_id": "run-XXX",
-  "command": "orquestrar",
+  "command": "orchestrate",
   "auto_mode": false,
-  "goal": "Descrição do objetivo",
+  "goal": "Goal description",
   "status": "created | waiting_for_user | running | blocked | failed | completed",
   "current_phase": "0_interview",
   "completed_phases": [],
@@ -229,59 +228,57 @@ O arquivo JSON deve seguir este formato:
   },
   "errors": [],
   "phase_summaries": {
-    "0_interview": "Resumo...",
-    "1_planner": "Resumo..."
+    "0_interview": "Summary...",
+    "1_planner": "Summary..."
   }
 }
 ```
 
-### 4.1 Retrocompatibilidade (Backward Compatibility)
-Para garantir compatibilidade com runs legadas, se o `state.json` lido pelo agente não possuir alguns dos novos campos em `interview_decisions` (como `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`), o campo `"loaded_skills"`, `"protocol_version"`, `"created_at"`, `"parent_run"` ou `"phase_history"`, o agente deve tratá-los como opcionais ou assumir valores default (ex: `null` para strings/objetos, `[]` para arrays, e `"1.0.0"` para `"protocol_version"`) para evitar falha catastrófica no parse ou na transição de fases.
-- **Mapeamento de Stack:** Se o campo `"technology_stack"` não estiver presente, mas `"language_runtime"` estiver preenchido, o agente deve mapear o valor existente como backend (ex: `technology_stack: { "frontend": null, "backend": language_runtime, "database": null, "styling": null }`) para garantir transições suaves.
+### 4.1 Backward Compatibility
+To ensure compatibility with legacy runs, if the `state.json` read by the agent is missing some of the new fields in `interview_decisions` (such as `destructive_operations_strategy`, `storage_strategy`, `accessibility_level`, `max_lines_per_file`), the `"loaded_skills"`, `"protocol_version"`, `"created_at"`, `"parent_run"`, or `"phase_history"` fields, the agent must treat them as optional or assume default values (e.g., `null` for strings/objects, `[]` for arrays, and `"1.0.0"` for `"protocol_version"`) to avoid catastrophic failure in parsing or phase transitions.
+- **Stack Mapping:** If the `"technology_stack"` field is not present but `"language_runtime"` is populated, the agent must map the existing value as backend (e.g., `technology_stack: { "frontend": null, "backend": language_runtime, "database": null, "styling": null }`) to ensure smooth transitions.
 
+### 4.2 Prevention Guardrails (`prevention_guardrails`)
+The `prevention_guardrails` array records which preventive guardrails were applied during the run. Each entry is a descriptive string (e.g., `"SEO_META_TAGS"`, `"FONT_LOADING_VERIFIED"`, `"SANITIZATION_APPLIED"`). This allows retroaudits and continuous protocol improvement.
 
-### 4.2 Guardrails de Prevenção (`prevention_guardrails`)
-O array `prevention_guardrails` registra quais guardrails preventivos foram aplicados durante a run. Cada entrada é uma string descritiva (ex: `"SEO_META_TAGS"`, `"FONT_LOADING_VERIFIED"`, `"SANITIZATION_APPLIED"`). Isso permite auditoria retroativa e melhoria contínua do protocolo.
+#### Guardrails Enforcement
+Each guardrail registered in the array MUST have an associated programmatic verification check in [build-validation-checklist.md](skills/build-validation-checklist.md). Guardrails without a corresponding programmatic check CANNOT be registered — this prevents declarative guardrails without actual enforcement. The mapping table is:
 
-#### Enforcement de Guardrails
-Cada guardrail registrado no array DEVE ter um check de verificação programático associado no [build-validation-checklist.md](skills/build-validation-checklist.md). Guardrails sem check programático correspondente NÃO PODEM ser registrados — isso previne guardrails declarativos sem enforcement real. A tabela de mapeamento é:
+| Guardrail | Required Check |
+|-----------|----------------|
+| `STRICT_TYPES_NO_ANY` | `grep "as any"` returns 0 occurrences in `src/` |
+| `SECURE_UUID_GENERATION` | `grep "Date.now()\|Math.random()"` returns 0 occurrences |
+| `SEO_META_TAGS` | `grep "<title>"` + `grep "name=\"description\""` present |
+| `FONT_LOADING_VERIFIED` | Fonts in CSS have matching `<link>` in HTML |
+| `PERSISTENCE_ERRORS_UI_HANDLED` | Every `catch` with `localStorage` has a call to toast/modal |
+| `FILE_SIZE_LIMIT_COMPLIANCE` | All components have < N lines |
 
-| Guardrail | Check obrigatório |
-|-----------|-------------------|
-| `STRICT_TYPES_NO_ANY` | `grep "as any"` retorna 0 ocorrências em `src/` |
-| `SECURE_UUID_GENERATION` | `grep "Date.now()\|Math.random()"` retorna 0 ocorrências |
-| `SEO_META_TAGS` | `grep "<title>"` + `grep "name=\"description\""` presentes |
-| `FONT_LOADING_VERIFIED` | Fontes no CSS possuem `<link>` correspondente no HTML |
-| `PERSISTENCE_ERRORS_UI_HANDLED` | Todo `catch` com `localStorage` possui chamada a toast/modal |
-| `FILE_SIZE_LIMIT_COMPLIANCE` | Todos os componentes possuem < N linhas |
+### 4.3 Quality Score (`quality_score`)
+The `quality_score` object is populated progressively by the validation (4), review (5), and critic (6) phases. Each dimension receives a score from 0 to 10 based on the rubric below. Scores equal to or greater than 8 MUST have an explicit justification in the corresponding artifact.
 
-### 4.3 Score de Qualidade (`quality_score`)
-O objeto `quality_score` é preenchido progressivamente pelas fases de validação (4), revisão (5) e crítica (6). Cada dimensão recebe uma nota de 0 a 10 com base na rubrica abaixo. Notas iguais ou superiores a 8 DEVEM ter justificativa explícita no artefato correspondente.
+#### `tests` Rubric:
+| Score | Criterion |
+|-------|-----------|
+| 0-3   | No tests or basic smoke test only |
+| 4-5   | Tests cover < 40% of functions/utilities |
+| 6-7   | Tests cover 40-70% of functions, no component tests |
+| 8-9   | Tests cover > 70% including integration or components |
+| 10    | Coverage > 90% with E2E or visual tests |
 
-#### Rubrica de `tests`:
-| Nota | Critério |
-|------|----------|
-| 0-3  | Sem testes ou apenas smoke test básico |
-| 4-5  | Testes cobrem < 40% das funções/utilitários |
-| 6-7  | Testes cobrem 40-70% das funções, sem testes de componentes |
-| 8-9  | Testes cobrem > 70% incluindo integração ou componentes |
-| 10   | Cobertura > 90% com testes E2E ou visuais |
+#### `code_quality` Rubric:
+| Score | Criterion |
+|-------|-----------|
+| 0-3   | Multiple guardrail violations (`as any`, duplicated logic) |
+| 4-5   | 1-2 minor violations, basic structure respected |
+| 6-7   | Zero violations, partial memoization, modularization ok |
+| 8-9   | Zero violations, full memoization, performance optimized |
+| 10    | Zero violations + clean AST/lint + bundle analysis performed |
 
-#### Rubrica de `code_quality`:
-| Nota | Critério |
-|------|----------|
-| 0-3  | Múltiplas violações de guardrails (`as any`, lógica duplicada) |
-| 4-5  | 1-2 violações menores, estrutura básica respeitada |
-| 6-7  | Zero violações, memoização parcial, modularização ok |
-| 8-9  | Zero violações, memoização completa, performance otimizada |
-| 10   | Zero violações + AST/lint limpo + bundle analysis realizado |
-
-#### Rubrica de `security`:
-| Nota | Critério |
-|------|----------|
-| 0-3  | Sem sanitização ou validação de dados externos |
-| 4-5  | Validação de schema presente, sem sanitização |
-| 6-7  | Schema + sanitização presente, sem testes de segurança |
-| 8-9  | Schema + sanitização + testes de segurança + XSS mitigado |
-| 10   | Tudo anterior + auditoria com ferramenta externa |
-
+#### `security` Rubric:
+| Score | Criterion |
+|-------|-----------|
+| 0-3   | No sanitization or validation of external data |
+| 4-5   | Schema validation present, no sanitization |
+| 6-7   | Schema + sanitization present, no security tests |
+| 8-9   | Schema + sanitization + security tests + XSS mitigated |
+| 10    | All of the above + audit with external tool |

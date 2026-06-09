@@ -1,50 +1,50 @@
-# Skill: Drag-and-Drop Patterns (DnD Nativo em React)
+# Skill: Drag-and-Drop Patterns (Native DnD in React)
 
-> Esta skill define os padrões obrigatórios para implementação de Drag-and-Drop nativo (HTML5 API) em projetos React, com foco em hierarquias de elementos arrastáveis. Deve ser lida pelo **Builder (Fase 3)** antes de implementar qualquer funcionalidade de DnD, e usada como régua de auditoria pelo **Validator (Fase 4)**, **Reviewer (Fase 5)** e **Critic (Fase 6)**.
+> This skill defines the mandatory patterns for implementing native Drag-and-Drop (HTML5 API) in React projects, with a focus on hierarchies of draggable elements. It must be read by the **Builder (Phase 3)** before implementing any DnD functionality, and used as an auditing benchmark by the **Validator (Phase 4)**, **Reviewer (Phase 5)**, and **Critic (Phase 6)**.
 
 ---
 
-## 1. Princípio Fundamental: Isolamento por Nível
+## 1. Fundamental Principle: Isolation by Level
 
-Quando múltiplos tipos de elementos são arrastáveis em hierarquia (ex: **card** dentro de **coluna**), as responsabilidades de DnD de cada nível DEVEM ser completamente isoladas. O modelo mental correto é:
+When multiple types of elements are draggable in a hierarchy (e.g., **card** inside **column**), the DnD responsibilities of each level MUST be completely isolated. The correct mental model is:
 
 ```
-[Coluna: draggable APENAS no header]
-  └── [Column Header] ← draggable aqui, onDragStart com "application/kanban-column"
-       └── [Card List] ← drop zone apenas (onDrop, onDragOver), sem draggable próprio
-             └── [Card] ← draggable aqui, onDragStart com "application/kanban-card"
+[Column: draggable ONLY on the header]
+  └── [Column Header] ← draggable here, onDragStart with "application/kanban-column"
+       └── [Card List] ← drop zone only (onDrop, onDragOver), without its own draggable
+             └── [Card] ← draggable here, onDragStart with "application/kanban-card"
 ```
 
-**Anti-pattern proibido (causa da falha na run-003):**
+**Prohibited anti-pattern (cause of failure in run-003):**
 ```jsx
-// ❌ ERRADO: draggable no container raiz que engloba os cards
+// ❌ WRONG: draggable on the root container encompassing the cards
 <div className="column-container" draggable onDragStart={handleColumnDrag}>
-  <div className="column-cards-list">  {/* cards aqui herdam o drag do pai */}
-    <Card draggable ... />  {/* conflito: dois níveis arrastáveis sem isolamento */}
+  <div className="column-cards-list">  {/* cards here inherit the drag from the parent */}
+    <Card draggable ... />  {/* conflict: two draggable levels without isolation */}
   </div>
 </div>
 ```
 
-**Padrão correto:**
+**Correct pattern:**
 ```jsx
-// ✅ CORRETO: draggable apenas no header da coluna
+// ✅ CORRECT: draggable only on the column header
 <div className="column-container">
   <div
     className="column-header"
-    draggable                                         // drag somente aqui
+    draggable                                         // drag only here
     onDragStart={handleColumnDragStart}
     onDragOver={handleColumnDragOver}
     onDrop={handleColumnDrop}
   >
-    {/* título, ações */}
+    {/* title, actions */}
   </div>
   <div
     className="column-cards-list"
-    onDragOver={handleCardDragOver}                   // drop zone de cards
+    onDragOver={handleCardDragOver}                   // drop zone for cards
     onDrop={handleCardDrop}
   >
     {cards.map(card => (
-      <Card key={card.id} draggable ... />            // drag de cards aqui
+      <Card key={card.id} draggable ... />            // card drag here
     ))}
   </div>
 </div>
@@ -52,14 +52,14 @@ Quando múltiplos tipos de elementos são arrastáveis em hierarquia (ex: **card
 
 ---
 
-## 2. Regra de MIME Types Distintos
+## 2. Distinct MIME Types Rule
 
-Todo `dataTransfer.setData()` DEVE usar um MIME type personalizado e único por nível de elemento. Isso permite que handlers de drop diferenciem o tipo de drag antes de processar.
+Every `dataTransfer.setData()` MUST use a custom and unique MIME type per element level. This allows drop handlers to differentiate the drag type before processing.
 
 ```jsx
-// Card — nivel filho
+// Card — child level
 const handleCardDragStart = (e) => {
-  e.stopPropagation();  // OBRIGATÓRIO — bloqueia borbulhamento para a coluna
+  e.stopPropagation();  // MANDATORY — blocks bubbling up to the column
   e.dataTransfer.setData('application/kanban-card', JSON.stringify({
     cardId: card.id,
     sourceColumnId: columnId
@@ -67,7 +67,7 @@ const handleCardDragStart = (e) => {
   e.dataTransfer.effectAllowed = 'move';
 };
 
-// Column — nível pai
+// Column — parent level
 const handleColumnDragStart = (e) => {
   e.dataTransfer.setData('application/kanban-column', column.id);
   e.dataTransfer.effectAllowed = 'move';
@@ -76,52 +76,52 @@ const handleColumnDragStart = (e) => {
 
 ---
 
-## 3. Regra de stopPropagation Obrigatório no Filho
+## 3. Mandatory stopPropagation Rule on Child Elements
 
-O `e.stopPropagation()` no handler `onDragStart` do elemento filho é **obrigatório e inegociável**. Sem ele, o evento `dragstart` do card borbulha até o container da coluna (que também é `draggable`), confundindo o browser sobre qual elemento está sendo arrastado.
+Calling `e.stopPropagation()` in the `onDragStart` handler of the child element is **mandatory and non-negotiable**. Without it, the card's `dragstart` event bubbles up to the column container (which is also `draggable`), confusing the browser about which element is being dragged.
 
 ```jsx
-// ✅ Card.jsx — stopPropagation SEMPRE primeiro
+// ✅ Card.jsx — stopPropagation is ALWAYS first
 const handleDragStart = (e) => {
-  e.stopPropagation();  // DEVE ser a primeira linha
+  e.stopPropagation();  // MUST be the first line
   e.dataTransfer.setData('application/kanban-card', JSON.stringify({ ... }));
 };
 ```
 
 ---
 
-## 4. Verificação de Tipo no onDrop
+## 4. Type Verification in onDrop
 
-Todo handler `onDrop` DEVE verificar o tipo de dado antes de processar o drop. Isso garante que o handler da coluna não processa drops de cards (e vice-versa):
+Every `onDrop` handler MUST verify the data type before processing the drop. This ensures that the column handler does not process card drops (and vice versa):
 
 ```jsx
-// Drop zone da lista de cards na coluna
+// Drop zone of the cards list in the column
 const handleCardAreaDrop = (e) => {
   e.preventDefault();
   const cardData = e.dataTransfer.getData('application/kanban-card');
-  if (!cardData) return;  // ignora se não for um drop de card
+  if (!cardData) return;  // ignores if not a card drop
   try {
     const { cardId, sourceColumnId } = JSON.parse(cardData);
     onCardDrop(cardId, sourceColumnId, column.id, insertIndex);
   } catch (err) {
-    console.error('Drop inválido:', err);
+    console.error('Invalid drop:', err);
   }
 };
 
-// Drop zone de reordenação de colunas no board
+// Drop zone for column reordering in the board
 const handleColumnAreaDrop = (e) => {
   e.preventDefault();
   const colId = e.dataTransfer.getData('application/kanban-column');
-  if (!colId) return;  // ignora se não for um drop de coluna
+  if (!colId) return;  // ignores if not a column drop
   onColumnDrop(colId, targetColumnId);
 };
 ```
 
 ---
 
-## 5. Drop com Posicionamento por Índice
+## 5. Position-Based Drop via Index
 
-O drop de um card DEVE inserir o elemento na posição correta (não apenas no final da lista). Use `getBoundingClientRect()` para calcular se o mouse está na metade superior ou inferior do card alvo:
+Dropping a card MUST insert the element in the correct position (not just at the end of the list). Use `getBoundingClientRect()` to calculate if the mouse is in the upper or lower half of the target card:
 
 ```jsx
 const handleCardDragOver = (e) => {
@@ -130,7 +130,7 @@ const handleCardDragOver = (e) => {
   if (!cardData) return;
 
   const cardElements = [...e.currentTarget.querySelectorAll('[data-card-id]')];
-  let insertIndex = cardElements.length; // padrão: fim da lista
+  let insertIndex = cardElements.length; // default: end of the list
 
   for (let i = 0; i < cardElements.length; i++) {
     const rect = cardElements[i].getBoundingClientRect();
@@ -146,12 +146,12 @@ const handleCardDragOver = (e) => {
 
 ---
 
-## 6. Indicadores Visuais de Posição de Drop
+## 6. Visual Drop Position Indicators
 
-Durante o drag, o usuário DEVE ver uma indicação visual de onde o card será inserido (linha pontilhada entre os cards):
+During drag, the user MUST see a visual indication of where the card will be inserted (dashed line between cards):
 
 ```css
-/* Linha indicadora de posição de drop */
+/* Drop position indicator line */
 .drop-indicator {
   height: 3px;
   background: var(--color-primary);
@@ -168,17 +168,17 @@ Durante o drag, o usuário DEVE ver uma indicação visual de onde o card será 
 
 ---
 
-## 7. Fallback Obrigatório para Mobile
+## 7. Mandatory Fallback for Mobile
 
-A API HTML5 de DnD não funciona de forma confiável em dispositivos touch (iOS Safari, especialmente). O Builder DEVE implementar botões de movimentação acessíveis como fallback permanente em telas touch:
+The HTML5 DnD API does not work reliably on touch devices (specifically iOS Safari). The Builder MUST implement accessible movement buttons as a permanent fallback on touch screens:
 
 ```css
-/* Oculto por padrão em desktop */
+/* Hidden by default on desktop */
 .card-accessible-actions {
   display: none;
 }
 
-/* Visível permanentemente em touch devices */
+/* Permanently visible on touch devices */
 @media (hover: none) {
   .card-accessible-actions {
     display: flex;
@@ -188,14 +188,14 @@ A API HTML5 de DnD não funciona de forma confiável em dispositivos touch (iOS 
 
 ---
 
-## 8. Checklist de Autovalidação (Builder e Validator)
+## 8. Self-Validation Checklist (Builder and Validator)
 
-Antes de concluir o build ou a validação, execute os seguintes greps:
+Before concluding build or validation, execute the following greps:
 
-| Check | Comando | Critério de PASS |
+| Check | Command | PASS Criterion |
 |---|---|---|
-| `draggable` no lugar certo | `grep -n "draggable" src/components/*.jsx` | Aparece apenas em elementos de "handle" (header/card), nunca em containers raiz que englobam filhos draggable |
-| `stopPropagation` no filho | `grep -n "stopPropagation" src/components/*.jsx` | Presente em todos os handlers dragStart de elementos filhos |
-| MIME types distintos | `grep -n "setData" src/components/*.jsx` | Cada nível usa um tipo diferente (ex: `kanban-card` vs `kanban-column`) |
-| Verificação de tipo no drop | `grep -n "getData" src/components/*.jsx` | Todo `onDrop` verifica o tipo antes de processar |
-| Fallback mobile | `grep -n "hover: none" src/*.css` | Presente para controles de movimento alternativo |
+| `draggable` in the right place | `grep -n "draggable" src/components/*.jsx` | Appears only on "handle" elements (header/card), never on root containers that enclose draggable children |
+| `stopPropagation` on the child | `grep -n "stopPropagation" src/components/*.jsx` | Present in all dragStart handlers of child elements |
+| Distinct MIME types | `grep -n "setData" src/components/*.jsx` | Each level uses a different type (e.g., `kanban-card` vs `kanban-column`) |
+| Type check on drop | `grep -n "getData" src/components/*.jsx` | Every `onDrop` verifies type before processing |
+| Mobile fallback | `grep -n "hover: none" src/*.css` | Present for alternative movement controls |

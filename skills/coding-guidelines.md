@@ -73,20 +73,20 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
-## 5. Exigência de Testabilidade Mínima
+## 5. Minimum Testability Requirement
 
-**Provas tangíveis superam "parece que funciona".**
+**Tangible proof beats "looks like it works".**
 
-Para qualquer run de desenvolvimento de software, você DEVE criar ao menos um arquivo de teste de fumaça (smoke test) ou teste de integração simples utilizando as ferramentas nativas ou sugeridas do ecossistema do projeto (ex: Vitest para React Vite, Jest para Vanilla, XUnit para .NET).
-Nunca confie apenas em análises estáticas ou builds visuais quando uma funcionalidade crítica puder ser validada com um script de teste simples.
+For any software development run, you MUST create at least one smoke test file or simple integration test using native or suggested tools from the project ecosystem (e.g., Vitest for React Vite, Jest for Vanilla, XUnit for .NET).
+Never trust static analysis or visual builds alone when critical functionality can be validated with a simple test script.
 
-## 6. Práticas Técnicas de Linguagem & Tipagem (TS/JS)
+## 6. Language & Typing Technical Practices (TS/JS)
 
-- **Tipagem Estrita (TypeScript):** É expressamente proibido o uso de casting forçado para `as any` em arquivos `.ts` ou `.tsx`. Você deve utilizar tipos explícitos, tipos union (ex: `as Category | 'all'`) ou asserções controladas com guards (`if (isType(value))`) para manter a segurança do compilador.
-- **Identificadores Únicos e Seguros:** Para a geração de chaves primárias e IDs de entidades no cliente (ex: IDs de tarefas, colunas), não utilize timestamps simples ou geradores baseados em probabilidade simples como `Date.now()` ou `Math.random()`. Você deve utilizar APIs criptograficamente seguras como `crypto.randomUUID()` (suportada por browsers modernos e Node.js) ou a biblioteca recomendada pelo stack (ex: `uuid`).
-  - **Dados de Seed/Iniciais:** Mesmo IDs de dados pré-populados (seed data, estado inicial padrão) devem utilizar o mesmo formato de geração que IDs criados em tempo de execução, para evitar inconsistência de formato e colisão em importações.
-- **Limites de Entrada (maxLength):** Todo campo de entrada textual (como `<input type="text">` ou `<textarea>`) deve conter a propriedade `maxLength` declarada com limites razoáveis de acordo com a regra de negócio (ex: 100 caracteres para títulos, 1000-2000 para descrições). Isso evita buffer overflows visuais e protege o parseador de dados.
+- **Strict Typing (TypeScript):** The use of forced casting to `as any` in `.ts` or `.tsx` files is expressely prohibited. You must use explicit types, union types (e.g., `as Category | 'all'`), or controlled assertions with guards (`if (isType(value))`) to maintain compiler safety.
+- **Unique and Secure Identifiers:** For generating primary keys and entity IDs on the client (e.g., task IDs, columns), do not use simple timestamps or generators based on simple probability like `Date.now()` or `Math.random()`. You must use cryptographically secure APIs like `crypto.randomUUID()` (supported by modern browsers and Node.js) or the stack's recommended library (e.g., `uuid`).
+  - **Seed/Initial Data:** Even IDs of pre-populated data (seed data, default initial state) must use the same generation format as IDs created at runtime, to avoid format inconsistency and collision during imports.
+- **Input Limits (maxLength):** Every textual input field (such as `<input type="text">` or `<textarea>`) must have the `maxLength` property declared with reasonable limits according to the business rule (e.g., 100 characters for titles, 1000-2000 for descriptions). This prevents visual buffer overflows and protects the data parser.
 
-## 7. Feedback de Ações
-- **Proibição de Ações Silenciosas:** Toda ação acionada pelo usuário (clique, atalho de teclado, submit) DEVE produzir feedback observável (visual, toast, foco, ou mudança de estado). Se a ação não puder ser executada no estado atual (ex: atalho para focar um elemento que não existe), o sistema DEVE exibir um feedback explicativo (ex: toast informativo), não falhar silenciosamente.
+## 7. Action Feedback
+- **Prohibition of Silent Actions:** Every action triggered by the user (click, keyboard shortcut, submit) MUST produce observable feedback (visual, toast, focus, or state change). If the action cannot be executed in the current state (e.g., shortcut to focus a non-existent element), the system MUST display explanatory feedback (e.g., informative toast), rather than failing silently.
 

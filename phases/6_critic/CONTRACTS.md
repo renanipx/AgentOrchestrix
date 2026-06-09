@@ -1,15 +1,15 @@
-# CONTRACTS — Fase 6: Critic Agent
+# CONTRACTS — Phase 6: Critic Agent
 
-## 1. Entradas (Input)
-- Todos os artefatos gerados na run (`task.md`, `architecture.md`, `build_report.md`, `validation_report.md`, `review.md`).
-- Código fonte implementado.
+## 1. Inputs
+- All artifacts generated in the run (`task.md`, `architecture.md`, `build_report.md`, `validation_report.md`, `review.md`).
+- Implemented source code.
 
-## 2. Saídas (Output)
-- **`runs/run-XXX/artifacts/critic.md`**: Documento contendo obrigatoriamente estas seções:
+## 2. Outputs
+- **`runs/run-XXX/artifacts/critic.md`**: Document that MUST contain these sections:
   ```markdown
-  # Risk Summary (Resumo dos riscos)
-  # Hidden Risks (Riscos ocultos mapeados)
-  # Maintenance Concerns (Preocupações sobre manutenção futura)
-  # Suggested Mitigations (Mitigações sugeridas)
-  # Actionable Backlog (Lista priorizada de itens acionáveis para próxima run)
+  # Risk Summary (Risk Summary)
+  # Hidden Risks (Hidden Risks Mapped)
+  # Maintenance Concerns (Future Maintenance Concerns)
+  # Suggested Mitigations
+  # Actionable Backlog (Prioritized list of actionable items for next run)
   ```

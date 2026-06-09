@@ -1,50 +1,50 @@
-# CORE — Diretrizes Unificadas e Otimização de Tokens
+# CORE — Unified Guidelines and Token Optimization
 
-Este arquivo condensa os princípios mais importantes de execução, comportamento e ferramentas do **AgentOrchestrix**. Leia este arquivo e o `RULES.md` da fase ativa antes de executar qualquer ação.
+This file condenses the most important principles of execution, behavior, and tools of **AgentOrchestrix**. Read this file and the active phase's `RULES.md` before executing any action.
 
 ---
 
-## 1. Loop de Execução e Transições (HEARTBEAT)
+## 1. Execution Loop and Transitions (HEARTBEAT)
 
-1. **Ciclo de Fases:** `0_interview` -> `1_planner` -> `2_architect` -> `3_builder` -> `4_validator` -> `5_reviewer` -> `6_critic` -> `completed`.
-2. **Híbrido-Autônomo (`auto_mode`):**
-   * **Fase 0 (Interview):** É interativa. Colete as respostas do usuário usando `ask_question`. Ao salvar o `goal.md`, transicione para a Fase 1 e ative `"auto_mode": true` no `state.json`.
-   * **Fase 1 a 6:** Rodam de forma 100% autônoma na IDE (geralmente sob modo `/goal`). Não pare no chat para aguardar novos inputs; imprima a checklist de transição, atualize o `state.json` no disco e inicie a próxima fase imediatamente.
-   * **Exceção de Handoff (Multi-Chat):** Ao fim da Fase 2 (Recomendado) ou Fase 3 (Obrigatório), gere o arquivo `artifacts/handoff.md`, altere o status para `waiting_for_user` no `state.json` e instrua o usuário a abrir um novo chat limpo e usar o comando `continuar-run: runs/run-XXX` para limpar a memória acumulada de tokens.
-3. **Rollback de Falhas:** Se a Fase 4 (Validator) ou Fase 5 (Reviewer) falharem de forma não crítica, altere `"current_phase"` para a fase de rollback (ex: `3_builder`), apague fases posteriores do array `"completed_phases"`, detalhe os motivos em `"rollback_changes"` no `state.json` e execute os reparos autônomos.
-4. **Âncoras de Memória (`phase_summaries`):** Ao concluir a fase ativa, o agente deve gravar um resumo executivo de no máximo 2 linhas descrevendo os pontos vitais e decisões tomadas no campo `"phase_summaries"` do `state.json`. Agentes subsequentes devem usar esses sumários como âncoras em vez de reler artefatos inteiros.
+1. **Phase Cycle:** `0_interview` -> `1_planner` -> `2_architect` -> `3_builder` -> `4_validator` -> `5_reviewer` -> `6_critic` -> `completed`.
+2. **Hybrid-Autonomous (`auto_mode`):**
+   * **Phase 0 (Interview):** Interactive. Collect the user's responses using `ask_question`. Upon saving `goal.md`, transition to Phase 1 and set `"auto_mode": true` in `state.json`.
+   * **Phases 1 to 6:** Run 100% autonomously in the IDE (usually under `/goal` mode). Do not stop in the chat to wait for new input; print the transition checklist, update `state.json` on disk, and start the next phase immediately.
+   * **Handoff Exception (Multi-Chat):** At the end of Phase 2 (Recommended) or Phase 3 (Mandatory), generate the `artifacts/handoff.md` file, change the status to `waiting_for_user` in `state.json`, and instruct the user to open a new clean chat and use the command `continue-run: runs/run-XXX` to clear accumulated token memory.
+3. **Failure Rollback:** If Phase 4 (Validator) or Phase 5 (Reviewer) fails in a non-critical way, change `"current_phase"` to the rollback phase (e.g., `3_builder`), delete subsequent phases from the `"completed_phases"` array, detail the reasons in `"rollback_changes"` in `state.json`, and execute autonomous repairs.
+4. **Memory Anchors (`phase_summaries`):** Upon completing the active phase, the agent must write an executive summary of at most 2 lines describing the vital points and decisions made in the `"phase_summaries"` field of `state.json`. Subsequent agents must use these summaries as anchors instead of re-reading entire artifacts.
 
-### 🔍 Auto-Auditoria de Transição (Obrigatório antes de salvar state.json):
+### 🔍 Transition Auto-Audit (Mandatory before saving state.json):
 ```markdown
-### 🔍 Auto-Auditoria de Transição: [Fase_Atual] -> [Próxima_Fase]
-- [ ] Todos os artefatos de saída exigidos pelo CONTRACTS.md foram gerados e salvos?
-- [ ] O handoff.md foi gerado (se for fim de Fase 2 ou 3)?
-- [ ] O state.json foi validado contra o schema e está 100% correto?
-- [ ] O critic.md contém algum risco classificado como [ALTO] (se sim, status = waiting_for_user)?
-- [ ] Log transition_<origem>_to_<destino>.log gerado em runs/run-XXX/logs/ ?
+### 🔍 Transition Auto-Audit: [Current_Phase] -> [Next_Phase]
+- [ ] Have all output artifacts required by CONTRACTS.md been generated and saved?
+- [ ] Was handoff.md generated (if at the end of Phase 2 or 3)?
+- [ ] Was state.json validated against the schema and is it 100% correct?
+- [ ] Does critic.md contain any risk classified as [HIGH] (if yes, status = waiting_for_user)?
+- [ ] Was transition_<origin>_to_<destination>.log generated in runs/run-XXX/logs/ ?
 ```
 
 ---
 
-## 2. Princípios Comportamentais (SOUL)
+## 2. Behavioral Principles (SOUL)
 
-1. **Barreiras de Contexto:** Aja como especialista exclusivo da fase ativa. O Planner especifica requisitos; o Architect projeta divisões/arquitetura; o Builder escreve código em `generated/`; o Validator executa e analisa testes/lint.
-2. **Prevenção > Detecção:** Mapeie erros sistêmicos recorrentes (UX, segurança, performance) e retroalimente novas regras preventivas na Fase 0 ou 2.
-3. **Anti-Viés de Auto-Avaliação:** Proibido auto-elogiar o código. Não dê notas máximas (10/10) a quesitos não medidos programaticamente. Todo claim em artefato deve ser verificado via `grep_search`.
-4. **Segurança por Padrão:** Toda entrada externa de dados (JSON, APIs) DEVE ser sanitizada e validada. Não use funções redundantes se o framework (ex: React JSX) já mitigar nativamente (evite double-encoding).
+1. **Context Boundaries:** Act as the exclusive specialist of the active phase. The Planner specifies requirements; the Architect projects splits/architecture; the Builder writes code in `generated/`; the Validator executes and analyzes tests/lint.
+2. **Prevention > Detection:** Map recurring systemic errors (UX, security, performance) and feed back new preventive rules in Phase 0 or 2.
+3. **Self-Evaluation Anti-Bias:** Prohibit self-praise of the code. Do not assign maximum scores (10/10) to aspects not programmatically measured. Every claim in an artifact must be verified via `grep_search`.
+4. **Security by Default:** All external data input (JSON, APIs) MUST be sanitized and validated. Do not use redundant functions if the framework (e.g., React JSX) already mitigates this natively (avoid double-encoding).
 
 ---
 
-## 3. Uso de Ferramentas e Edição Precisa (TOOLS)
+## 3. Tool Usage and Precise Editing (TOOLS)
 
-1. **Edições Cirúrgicas Obrigatórias:**
-   * **PROIBIDO** usar `write_to_file` com `Overwrite: true` em arquivos de código ou configuração já existentes.
-   * **OBRIGATÓRIO** usar `replace_file_content` ou `multi_replace_file_content` para alterações em arquivos existentes. Isso economiza milhares de tokens de entrada e saída.
-2. **Visualização Inteligente:**
-   * Prefira `view_file` nativo a comandos de terminal (`cat`, `dir`).
-   * Para ler arquivos de código grandes, use `grep_search` para localizar o trecho e abra apenas as linhas relevantes com `StartLine` e `EndLine` no `view_file`.
-3. **Validação Factual:** Sempre use `grep_search` para certificar-se de que declarações qualitativas nos relatórios (ex: "XSS mitigado em X") refletem a realidade do código-fonte.
-4. **Sem loops de Polling:** Proibido rodar processos infinitos no terminal.
-5. **Poda Dinâmica de Contexto (Context Pruning):**
-   * **Não Relera Arquivos Redundantes:** O agente não deve re-ler arquivos que já foram carregados na conversa caso estes não tenham sofrido alterações externas. Confie no histórico de chat.
-   * **Feche Abas Inativas:** Se o agente identificar que existem arquivos abertos na IDE irrelevantes ao objetivo atual, deve pedir ao usuário para fechar essas abas para limpar o contexto do prompt.
+1. **Mandatory Surgical Edits:**
+   * **PROHIBITED** from using `write_to_file` with `Overwrite: true` on already existing code or configuration files.
+   * **MANDATORY** to use `replace_file_content` or `multi_replace_file_content` for changes to existing files. This saves thousands of input and output tokens.
+2. **Smart Viewing:**
+   * Prefer native `view_file` over terminal commands (`cat`, `dir`).
+   * To read large code files, use `grep_search` to locate the section and open only the relevant lines with `StartLine` and `EndLine` in `view_file`.
+3. **Factual Validation:** Always use `grep_search` to ensure qualitative statements in reports (e.g., "XSS mitigated in X") reflect the reality of the source code.
+4. **No Polling Loops:** Prohibited from running infinite processes in the terminal.
+5. **Dynamic Context Pruning:**
+   * **Do Not Re-Read Redundant Files:** The agent must not re-read files that have already been loaded in the conversation if they have not undergone external changes. Rely on the chat history.
+   * **Close Inactive Tabs:** If the agent identifies open tabs in the IDE that are irrelevant to the current goal, it should ask the user to close these tabs to clean up the prompt context.

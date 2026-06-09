@@ -1,36 +1,35 @@
-# TOOLS — Controle de Capacidades e Ferramentas
+# TOOLS — Capability and Tool Control
 
-Este arquivo regula como a IDE utiliza suas ferramentas nativas no ciclo do AgentOrchestrix para garantir rastreabilidade, economia de tokens e eficácia operacional.
+This file regulates how the IDE utilizes its native tools within the AgentOrchestrix cycle to ensure traceability, token economy, and operational efficacy.
 
-## 1. Regras de Uso de Ferramentas
-- **Visualização de Arquivos (`view_file`):** Sempre prefira ferramentas nativas de visualização de arquivos à execução de comandos como `cat` no terminal.
-- **Pesquisa Local (`grep_search`):** Utilize pesquisas nativas da IDE para buscar referências de código e termos específicos, evitando rodar buscas com `find` ou `grep` por terminal.
-- **Escrita e Edição (`write_to_file`/`replace_file_content`):** Modifique arquivos usando ferramentas de substituição direcionadas para evitar reescrever trechos gigantescos desnecessariamente.
-
----
-
-## 2. Restrições e Ambiente
-- **Sem Loops de Polling:** Nunca crie scripts ou comandos que executem em loops infinitos esperando por eventos. Use o agendador nativo da IDE ou pare a execução até o usuário dar input.
-- **Comandos não interativos:** Ao rodar instalações ou builds, sempre garanta flags que desativem prompts interativos (ex: `npm install -y`, `npx -y ...`).
-- **Limpeza:** Nunca gere arquivos temporários fora das pastas `runs/run-XXX/` da execução ativa ou dos diretórios de cache autorizados da IDE.
+## 1. Tool Usage Rules
+- **Viewing Files (`view_file`):** Always prefer native file-viewing tools over executing terminal commands like `cat`.
+- **Local Search (`grep_search`):** Use the IDE's native search tools to find code references and specific terms, avoiding running searches with `find` or `grep` via the terminal.
+- **Writing and Editing (`write_to_file`/`replace_file_content`):** Modify files using targeted replacement tools to avoid unnecessarily rewriting massive chunks of text.
 
 ---
 
-## 3. Validações Automáticas (Checklist de Ferramentas)
-Ao concluir a fase de Build (Fase 3) ou iniciar a fase de Validação (Fase 4), o agente DEVE executar automaticamente as verificações estruturais e de qualidade utilizando suas ferramentas nativas.
-
-As regras de validação específicas de cada tecnologia, incluindo comandos de busca e conformidade do código gerado, estão catalogadas no documento [build-validation-checklist.md](skills/build-validation-checklist.md). O Validator e o Builder devem carregar e seguir esta lista para auditoria automática do stack do projeto.
+## 2. Constraints and Environment
+- **No Polling Loops:** Never create scripts or commands that execute in infinite loops waiting for events. Use the IDE's native scheduler or stop execution until the user provides input.
+- **Non-Interactive Commands:** When running installations or builds, always ensure flags are set to disable interactive prompts (e.g., `npm install -y`, `npx -y ...`).
+- **Cleanliness:** Never generate temporary files outside the `runs/run-XXX/` folders of the active execution or authorized IDE cache directories.
 
 ---
 
-## 4. Verificação Cruzada (Artefato ↔ Código)
-Quando um artefato de documentação (`architecture.md`, `review.md`, `critic.md`) faz uma afirmação técnica sobre o código (ex: "React.memo aplicado no componente X", "contexto chamado BoardContext"), o agente DEVE utilizar `grep_search` para validar que a afirmação é factually verdadeira antes de incluí-la no artefato.
+## 3. Automatic Validations (Tools Checklist)
+Upon completing the Build phase (Phase 3) or starting the Validation phase (Phase 4), the agent MUST automatically execute structural and quality checks using its native tools.
 
-**Exemplos de verificações obrigatórias:**
-- Nomes de arquivos/componentes listados no `architecture.md` → verificar com `list_dir`
-- Claims de uso de `React.memo`, `useCallback`, `useMemo` → verificar com `grep_search`
-- Nomes de contextos React → verificar exportações com `grep_search`
-- Estrutura de pastas declarada → verificar com `list_dir`
+Specific technology validation rules, including search commands and compliance of the generated code, are cataloged in the [build-validation-checklist.md](skills/build-validation-checklist.md) document. The Validator and the Builder must load and follow this list for automated auditing of the project stack.
 
-Se a verificação falhar, o agente DEVE corrigir o artefato para refletir a realidade do código, ou corrigir o código para atender o artefato — nunca deixar a divergência.
+---
 
+## 4. Cross-Verification (Artifact ↔ Code)
+When a documentation artifact (`architecture.md`, `review.md`, `critic.md`) makes a technical claim about the code (e.g., "React.memo applied to component X", "context named BoardContext"), the agent MUST use `grep_search` to validate that the claim is factually true before including it in the artifact.
+
+**Examples of mandatory checks:**
+- File/component names listed in `architecture.md` → verify with `list_dir`
+- Claims of using `React.memo`, `useCallback`, `useMemo` → verify with `grep_search`
+- React context names → verify exports with `grep_search`
+- Folder structure declared → verify with `list_dir`
+
+If the verification fails, the agent MUST correct the artifact to reflect the reality of the code, or correct the code to match the artifact — never leave the discrepancy unresolved.

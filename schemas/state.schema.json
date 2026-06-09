@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "AgentOrchestrixState",
-  "description": "Schema de validação para o estado de execução (state.json) do protocolo AgentOrchestrix.",
+  "description": "Validation schema for the execution state (state.json) of the AgentOrchestrix protocol.",
   "type": "object",
   "required": [
     "run_id",
@@ -25,26 +25,26 @@
     "run_id": {
       "type": "string",
       "pattern": "^run-\\d{3,4}$",
-      "description": "Identificador único da run (ex: run-001)"
+      "description": "Unique identifier of the run (e.g., run-001)"
     },
     "command": {
       "type": "string",
-      "enum": ["orquestrar", "planejar", "continuar-run", "validar-run", "analisar"],
-      "description": "Comando invocado para inicializar ou gerenciar a run"
+      "enum": ["orchestrate", "plan", "continue-run", "validate-run", "analyze"],
+      "description": "Command invoked to initialize or manage the run"
     },
     "goal": {
       "type": "string",
-      "description": "Objetivo principal da run"
+      "description": "Main goal of the run"
     },
     "status": {
       "type": "string",
       "enum": ["created", "waiting_for_user", "running", "blocked", "failed", "completed"],
-      "description": "Estado atual da run"
+      "description": "Current state of the run"
     },
     "current_phase": {
       "type": "string",
       "enum": ["0_interview", "1_planner", "2_architect", "3_builder", "4_validator", "5_reviewer", "6_critic", "completed"],
-      "description": "Fase atual em execução"
+      "description": "Current phase in execution"
     },
     "completed_phases": {
       "type": "array",
@@ -52,35 +52,35 @@
         "type": "string",
         "enum": ["0_interview", "1_planner", "2_architect", "3_builder", "4_validator", "5_reviewer", "6_critic"]
       },
-      "description": "Fases que já foram concluídas"
+      "description": "Phases that have already been completed"
     },
     "protocol_version": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Versão do protocolo AgentOrchestrix"
+      "description": "AgentOrchestrix protocol version"
     },
     "created_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp ISO 8601 da criação da run"
+      "description": "ISO 8601 timestamp of run creation"
     },
     "updated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp ISO 8601 da última atualização da run"
+      "description": "ISO 8601 timestamp of last run update"
     },
     "parent_run": {
       "type": ["string", "null"],
       "pattern": "^(run-\\d{3,4})?$",
-      "description": "ID da run pai da qual esta run herda decisões (se aplicável)"
+      "description": "Parent run ID from which this run inherits decisions (if applicable)"
     },
     "environment_ready": {
       "type": ["boolean", "null"],
-      "description": "Indica se as ferramentas de linha de comando necessárias estão disponíveis no ambiente"
+      "description": "Indicates if the required command line tools are available in the environment"
     },
     "phase_history": {
       "type": "array",
-      "description": "Histórico de transições e rollback de fases",
+      "description": "Phase transitions and rollback history",
       "items": {
         "type": "object",
         "required": ["phase", "status", "timestamp"],
@@ -99,7 +99,7 @@
           },
           "rollback_changes": {
             "type": "array",
-            "description": "Lista de arquivos modificados e motivos do rollback nesta iteração",
+            "description": "List of modified files and rollback reasons in this iteration",
             "items": {
               "type": "object",
               "required": ["file", "reason"],
@@ -114,7 +114,7 @@
     },
     "interview_decisions": {
       "type": "object",
-      "description": "Decisões consolidadas na Fase 0 (Entrevista)",
+      "description": "Consolidated decisions in Phase 0 (Interview)",
       "required": [
         "scope",
         "acceptance_criteria",
@@ -132,11 +132,11 @@
       "properties": {
         "language_runtime": {
           "type": ["string", "null"],
-          "description": "Depreciado: mantido para retrocompatibilidade. Usar technology_stack."
+          "description": "Deprecated: kept for backward compatibility. Use technology_stack."
         },
         "technology_stack": {
           "type": ["object", "null"],
-          "description": "Múltiplos stacks de tecnologia definidos para o projeto",
+          "description": "Multiple technology stacks defined for the project",
           "properties": {
             "frontend": {
               "type": ["string", "object", "null"]
@@ -188,11 +188,11 @@
         },
         "environment_decision": {
           "type": ["string", "null"],
-          "description": "Decisão do usuário em caso de ferramentas de ambiente ausentes (ex: 'proceed_without_runtime')"
+          "description": "User decision in case of missing environment tools (e.g., 'proceed_without_runtime')"
         },
         "complex_interactions": {
           "type": ["array", "null"],
-          "description": "Lista de pares de níveis de interação hierárquica identificados na Fase 0 (ex: ['card-dentro-de-coluna', 'widget-dentro-de-painel']). Quando preenchido, ativa guardrails de isolamento de evento nas Fases 1 a 6.",
+          "description": "List of hierarchical interaction level pairs identified in Phase 0 (e.g., ['card-within-column', 'widget-within-panel']). When populated, activates event isolation guardrails in Phases 1 to 6.",
           "items": {
             "type": "string"
           }
@@ -248,11 +248,11 @@
     },
     "auto_mode": {
       "type": "boolean",
-      "description": "Indica se a run está sendo executada em modo autônomo nas fases subsequentes"
+      "description": "Indicates if the run is being executed in autonomous mode in subsequent phases"
     },
     "phase_summaries": {
       "type": "object",
-      "description": "Resumos executivos de cada fase (máximo 2 linhas por fase) para evitar releitura de artefatos",
+      "description": "Executive summaries of each phase (maximum 2 lines per phase) to avoid re-reading artifacts",
       "properties": {
         "0_interview": { "type": "string" },
         "1_planner": { "type": "string" },

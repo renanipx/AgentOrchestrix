@@ -1,15 +1,15 @@
-# CONTRACTS — Fase 4: Validator Stage
+# CONTRACTS — Phase 4: Validator Stage
 
-## 1. Entradas (Input)
+## 1. Inputs
 - `runs/run-XXX/artifacts/build_report.md`
-- Arquivos de código gerados no repositório.
+- Generated code files in the repository.
 
-## 2. Saídas (Output)
-- **`runs/run-XXX/artifacts/validation_report.md`**: Documento contendo obrigatoriamente estas seções:
+## 2. Outputs
+- **`runs/run-XXX/artifacts/validation_report.md`**: Document that MUST contain these sections:
   ```markdown
-  # Summary (Status geral de sucesso ou falha)
-  # Commands Executed (Quais comandos foram disparados)
-  # Results (Logs e saídas de sucesso - DEVE conter o stdout real do terminal)
-  # Failures (Logs e saídas de erro / testes quebrados - DEVE conter o stdout real do terminal)
-  # Skipped Checks (O que foi ignorado e o motivo)
+  # Summary (Overall success or failure status)
+  # Commands Executed (Which commands were run)
+  # Results (Success logs and outputs - MUST contain the actual stdout from the terminal)
+  # Failures (Error logs and outputs / broken tests - MUST contain the actual stdout from the terminal)
+  # Skipped Checks (What was bypassed and the reason)
   ```

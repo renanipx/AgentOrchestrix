@@ -1,24 +1,24 @@
-# CONTRACTS — Fase 5: Reviewer Agent
+# CONTRACTS — Phase 5: Reviewer Agent
 
-## 1. Entradas (Input)
+## 1. Inputs
 - `runs/run-XXX/artifacts/task.md`
 - `runs/run-XXX/artifacts/architecture.md`
 - `runs/run-XXX/artifacts/build_report.md`
 - `runs/run-XXX/artifacts/validation_report.md`
-- Código fonte implementado (em `runs/run-XXX/generated/`).
+- Implemented source code (in `runs/run-XXX/generated/`).
 
-## 2. Saídas (Output)
-- **`runs/run-XXX/artifacts/review.md`**: Documento contendo obrigatoriamente estas seções:
+## 2. Outputs
+- **`runs/run-XXX/artifacts/review.md`**: Document that MUST contain these sections:
   ```markdown
-  # Verdict (Aprovado / Reprovado / Precisa de Ajustes)
-  # Requirements Coverage (Quão bem os requisitos foram atendidos)
-  # Architecture Alignment (Alinhamento com o plano de arquitetura)
-  # Technical Contracts Status (Status detalhado PASSOU/FALHOU de cada contrato técnico)
-  # Risk Mitigation Audit (Auditoria de mitigação dos riscos mapeados no planejamento)
-  # Syntax And Test Check (Resultado da análise estática e execução de testes)
-  # UX Compliance (Conformidade de UX: formulários, empty states, feedback de erro)
-  # Performance Review (Memoização, lógica duplicada, dependency arrays)
-  # Cross-Browser Compatibility (Compatibilidade entre navegadores)
-  # Issues (Lista de problemas identificados)
-  # Recommendation (Recomendações e próximos passos)
+  # Verdict (Approved / Rejected / Needs Adjustment)
+  # Requirements Coverage (How well the requirements were met)
+  # Architecture Alignment (Alignment with the architecture plan)
+  # Technical Contracts Status (Detailed PASSED/FAILED status of each technical contract)
+  # Risk Mitigation Audit (Audit of risk mitigations mapped during planning)
+  # Syntax And Test Check (Static analysis and test execution results)
+  # UX Compliance (UX compliance: forms, empty states, error feedback)
+  # Performance Review (Memoization, duplicate logic, dependency arrays)
+  # Cross-Browser Compatibility
+  # Issues (List of identified problems)
+  # Recommendation (Recommendations and next steps)
   ```

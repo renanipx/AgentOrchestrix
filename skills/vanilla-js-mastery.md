@@ -1,42 +1,42 @@
 # Vanilla JS Mastery
 
-Este documento descreve as boas práticas arquiteturais e de resiliência ao construir aplicações utilizando Vanilla JS (sem frameworks).
+This document describes architectural and resilience best practices when building applications using Vanilla JS (without frameworks).
 
-## 1. Tratamento de Persistência Local (localStorage)
-Nunca confie que os dados armazenados localmente estão íntegros. Ao invés de um parse direto, utilize blocos `try/catch` para prover um fallback amigável.
+## 1. Local Persistence Handling (localStorage)
+Never assume that locally stored data is integral. Instead of a direct parse, use `try/catch` blocks to provide a friendly fallback.
 
 ```javascript
-// ❌ RUIM: Pode causar travamento se corrompido
+// ❌ BAD: Can cause crashes if corrupted
 const data = JSON.parse(localStorage.getItem("appState"));
 
-// ✅ BOM: Trata falhas e previne quebra de UI
+// ✅ GOOD: Handles failures and prevents UI crash
 function getStoredState() {
   try {
     const rawData = localStorage.getItem("appState");
     return rawData ? JSON.parse(rawData) : null;
   } catch (error) {
     console.error("Failed to parse appState", error);
-    return null; // ou um estado padrão vazio
+    return null; // or a default empty state
   }
 }
 ```
 
-## 2. Geração de Identificadores Seguros
-Não utilize `Date.now()` para IDs. Requisições concorrentes ou loops síncronos irão gerar o mesmo timestamp, o que leva à colisão de chaves (IDs duplicados).
+## 2. Secure Identifiers Generation
+Do not use `Date.now()` for IDs. Concurrent requests or synchronous loops will generate the same timestamp, leading to key collisions (duplicate IDs).
 
 ```javascript
-// ❌ RUIM: Propensão à colisão
+// ❌ BAD: Prone to collision
 const newId = Date.now().toString();
 
-// ✅ BOM: Uso da Web Crypto API para UUIDs reais
+// ✅ GOOD: Use Web Crypto API for real UUIDs
 const newId = crypto.randomUUID();
 ```
 
-## 3. Performance de Eventos Contínuos
-Ouvintes de eventos que disparam várias vezes por segundo (`scroll`, `resize`, `mousemove`, `dragover`) devem **sempre** ser controlados utilizando `throttle` (se o feedback precisar ser constante) ou `debounce` (se só deve executar após a pausa).
+## 3. Continuous Event Performance
+Event listeners that fire multiple times per second (`scroll`, `resize`, `mousemove`, `dragover`) must **always** be controlled using `throttle` (if feedback must be constant) or `debounce` (if it should only execute after a pause).
 
 ```javascript
-// Exemplo de Throttle (útil para dragover e scroll)
+// Throttle Example (useful for dragover and scroll)
 function throttle(func, limit) {
   let inThrottle;
   return function() {
@@ -53,10 +53,10 @@ function throttle(func, limit) {
 element.addEventListener('dragover', throttle(handleDragOver, 30));
 ```
 
-## 4. Renderização Atômica vs Destrutiva
-Nunca jogue fora o DOM inteiro para uma mudança de estado pequena. Substituir tudo com `innerHTML` de uma div raiz ou reconstruir a UI causa:
-- Lentidão massiva
-- Perda de "focus" de inputs
-- Re-trigger de reflow e repaint em elementos não-afetados.
+## 4. Atomic vs Destructive Rendering
+Never discard the entire DOM for a small state change. Replacing everything with `innerHTML` from a root div or rebuilding the UI causes:
+- Massive performance hit
+- Loss of input focus
+- Re-triggering reflow and repaint on unaffected elements.
 
-Ao invés disso, atualize apenas o que mudou (busque os nós existentes e altere o `textContent`, `classList` ou `value`).
+Instead, update only what changed (look up existing nodes and alter their `textContent`, `classList`, or `value`).
