@@ -20,9 +20,33 @@
       "id": "frontend-blueprint",
       "name": "Frontend Blueprint",
       "path": "skills/frontend-blueprint.md",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "stacks": ["react", "nextjs", "vanilla-js"],
       "phases": ["0_interview", "2_architect", "3_builder"]
+    },
+    {
+      "id": "frontend-layout",
+      "name": "Frontend Layout",
+      "path": "skills/frontend-layout.md",
+      "version": "1.0.0",
+      "stacks": ["react", "nextjs", "vanilla-js"],
+      "phases": ["2_architect", "3_builder"]
+    },
+    {
+      "id": "frontend-accessibility",
+      "name": "Frontend Accessibility",
+      "path": "skills/frontend-accessibility.md",
+      "version": "1.0.0",
+      "stacks": ["react", "nextjs", "vanilla-js"],
+      "phases": ["2_architect", "3_builder", "4_validator"]
+    },
+    {
+      "id": "frontend-state",
+      "name": "Frontend State",
+      "path": "skills/frontend-state.md",
+      "version": "1.0.0",
+      "stacks": ["react", "nextjs", "vanilla-js"],
+      "phases": ["2_architect", "3_builder", "5_reviewer"]
     },
     {
       "id": "react-best-practices",

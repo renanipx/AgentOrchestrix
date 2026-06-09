@@ -211,7 +211,8 @@
         "validation_report": { "type": "string" },
         "review": { "type": "string" },
         "critic": { "type": "string" },
-        "planning_summary": { "type": "string" }
+        "planning_summary": { "type": "string" },
+        "handoff": { "type": "string" }
       },
       "additionalProperties": true
     },
@@ -244,6 +245,24 @@
       "items": {
         "type": "string"
       }
+    },
+    "auto_mode": {
+      "type": "boolean",
+      "description": "Indica se a run está sendo executada em modo autônomo nas fases subsequentes"
+    },
+    "phase_summaries": {
+      "type": "object",
+      "description": "Resumos executivos de cada fase (máximo 2 linhas por fase) para evitar releitura de artefatos",
+      "properties": {
+        "0_interview": { "type": "string" },
+        "1_planner": { "type": "string" },
+        "2_architect": { "type": "string" },
+        "3_builder": { "type": "string" },
+        "4_validator": { "type": "string" },
+        "5_reviewer": { "type": "string" },
+        "6_critic": { "type": "string" }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

@@ -40,7 +40,8 @@
     "validation_report": "artifacts/validation_report.md",
     "review": "artifacts/review.md",
     "critic": "artifacts/critic.md",
-    "planning_summary": "artifacts/planning_summary.md"
+    "planning_summary": "artifacts/planning_summary.md",
+    "handoff": "artifacts/handoff.md"
   },
   "prevention_guardrails": [],
   "loaded_skills": [],

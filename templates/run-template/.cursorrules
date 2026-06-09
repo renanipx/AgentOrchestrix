@@ -1,0 +1,26 @@
+# AgentOrchestrix Run-Level Rules and Exclusions
+
+# 1. Indexing & Search Exclusions (Token Optimization)
+# Prevent the AI from scanning compiled files, dependencies, or large caches.
+.cursorignore:
+node_modules/
+dist/
+build/
+.next/
+out/
+generated/dist/
+generated/build/
+.git/
+*.log
+*.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 2. Agent Orchester Enforcement
+# If you are an AI assistant executing inside this run:
+# 1. ALWAYS read state.json first to know the current active phase.
+# 2. Read CORE.md (in the root directory) and phases/<current_phase>/RULES.md.
+# 3. DO NOT execute work or edit files that belong to other phases (e.g. Builder only in Phase 3).
+# 4. Strictly use replace_file_content for existing file edits (NO write_to_file overwrites).
+# 5. Fill phase_summaries in state.json on transition.

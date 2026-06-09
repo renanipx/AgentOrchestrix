@@ -38,6 +38,14 @@ Se a fase atual for a `6_critic` e o Critic identificar um risco com severidade 
 
 ### 1.2 Protocolo de Auto-Validação de Transição
 Antes de modificar o campo `"current_phase"` no `state.json`, o agente DEVE imprimir no chat um bloco markdown contendo a seguinte lista de verificação preenchida:
+
+#### 1.2.1 Comportamento da Transição no Modo Autônomo (auto_mode)
+Se a propriedade `"auto_mode"` no `state.json` for `true`, o agente realiza o mesmo Protocolo de Auto-Validação, porém a transição é direta:
+1. Imprime a auto-auditoria no chat apenas para fins de logging e auditoria.
+2. Atualiza e salva o `state.json` com `"current_phase": "<Próxima_Fase>"` no disco.
+3. Carrega imediatamente o `RULES.md` e `CONTRACTS.md` da nova fase na mesma thread de execução.
+4. Prossegue com a execução da nova fase de forma contínua, sem interromper ou aguardar nova instrução/mensagem do usuário no chat (geralmente sob modo `/goal`).
+
 ```markdown
 ### 🔍 Auto-Auditoria de Transição: [Fase_Atual] -> [Próxima_Fase]
 - [ ] Todos os artefatos de saída exigidos pelo CONTRACTS.md foram gerados e salvos? (Listar caminhos físicos)
@@ -89,6 +97,36 @@ Quando o objetivo de uma run descrever um tipo de sistema reconhecível (ex: sis
 
 Este processo previne que funcionalidades implícitas sejam omitidas do contrato inicial e obriga que as fases de planejamento, arquitetura e build tratem desde o início os aspectos de isolamento e isolação necessários.
 
+### 1.7 Âncoras de Memória (Memory Anchors)
+Para evitar que o Reviewer (Fase 5) e o Critic (Fase 6) leiam múltiplos arquivos markdown extensos (como `goal.md`, `task.md` ou `architecture.md`), o agente deve preencher e atualizar a propriedade `"phase_summaries"` no `state.json` ao finalizar cada fase.
+- Cada resumo deve possuir no máximo 2 linhas.
+- O resumo deve consolidar apenas as decisões críticas e os resultados da fase.
+- Nas fases subsequentes, os agentes devem priorizar a leitura de `"phase_summaries"` em vez de re-ler os arquivos físicos de documentação das fases anteriores.
+
+### 1.8 Transições de Conversa (Handoffs Multi-Chat)
+Para mitigar os efeitos de congestionamento de tokens e vazamento de papéis (Role Leakage) durante a execução contínua, o protocolo AgentOrchestrix implementa transições de conversa controladas por arquivos de handoff.
+- **Handoff Recomendado:** Ao final da **Fase 2 (Architect)**, antes de iniciar o build na Fase 3.
+- **Handoff Obrigatório:** Ao final da **Fase 3 (Builder)**, antes do Validator na Fase 4.
+
+#### 1.8.1 Geração do Handoff:
+Quando uma transição de handoff for ativada (seja recomendada ou obrigatória):
+1. O agente em encerramento DEVE criar o arquivo `runs/run-XXX/artifacts/handoff.md` e preencher o campo `"handoff"` sob `"artifacts"` no `state.json`.
+2. O arquivo `handoff.md` deve conter a seguinte estrutura básica:
+   - **Date:** Timestamp ISO 8601 da criação do handoff.
+   - **Fase de Origem:** A fase que está sendo encerrada (ex: `2_architect` ou `3_builder`).
+   - **Resumo do Progresso:** Um resumo curto e focado do que foi concluído na run até este ponto.
+   - **Estrutura de Arquivos Críticos:** Caminhos relativos de arquivos de arquitetura ou códigos relevantes.
+   - **Próximos Passos e Ações Pendentes:** O que a próxima fase deve executar assim que a run for retomada.
+3. O status da run é alterado para `"waiting_for_user"` no `state.json`.
+4. O agente finaliza a resposta pedindo ao usuário para abrir um novo chat limpo na IDE e enviar o comando `continuar-run: runs/run-XXX`.
+
+#### 1.8.2 Recuperação do Handoff:
+Ao receber o comando `continuar-run: runs/run-XXX` em uma nova janela de chat:
+1. O agente carrega o `state.json`.
+2. O agente lê o arquivo `artifacts/handoff.md` para carregar a memória essencial da run.
+3. O agente lê o `RULES.md` e `CONTRACTS.md` da `"current_phase"` correspondente.
+4. O status da run é restaurado para `"running"` com `"auto_mode": true`, e a execução prossegue de forma autônoma a partir da nova fase.
+
 ---
 
 ## 2. Auditoria de Consistência
@@ -136,6 +174,7 @@ O arquivo JSON deve seguir este formato:
 {
   "run_id": "run-XXX",
   "command": "orquestrar",
+  "auto_mode": false,
   "goal": "Descrição do objetivo",
   "status": "created | waiting_for_user | running | blocked | failed | completed",
   "current_phase": "0_interview",
@@ -175,7 +214,8 @@ O arquivo JSON deve seguir este formato:
     "validation_report": "artifacts/validation_report.md",
     "review": "artifacts/review.md",
     "critic": "artifacts/critic.md",
-    "planning_summary": "artifacts/planning_summary.md"
+    "planning_summary": "artifacts/planning_summary.md",
+    "handoff": "artifacts/handoff.md"
   },
   "prevention_guardrails": [],
   "loaded_skills": [],
@@ -187,7 +227,11 @@ O arquivo JSON deve seguir este formato:
     "tests": null,
     "security": null
   },
-  "errors": []
+  "errors": [],
+  "phase_summaries": {
+    "0_interview": "Resumo...",
+    "1_planner": "Resumo..."
+  }
 }
 ```
 
